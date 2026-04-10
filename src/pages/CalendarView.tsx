@@ -178,30 +178,46 @@ export default function CalendarView() {
     return (
         <div className="max-w-2xl mx-auto px-4 pb-32 pt-4">
             {/* Header */}
-            <header className="mb-8 flex items-center justify-between">
-                <div>
-                    <h1 className="font-['Inter'] font-black text-4xl uppercase tracking-tighter leading-none">PLAN</h1>
-                    <span className="font-['Space_Grotesk'] text-primary font-bold tracking-widest text-sm">MACROCICLO</span>
-                </div>
-
-                <div className="flex flex-col items-end gap-2">
-                    <div className="flex bg-surface-container-high rounded-lg p-1">
-                        <button onClick={handlePrevMonth} className="px-3 py-2 rounded-md hover:bg-surface-variant transition-colors">
-                            <span className="material-symbols-outlined text-sm">chevron_left</span>
-                        </button>
-                        <div className="px-4 py-2 font-['Space_Grotesk'] font-bold text-sm min-w-[120px] text-center uppercase tracking-widest">
-                            {monthNames[month]} {year}
-                        </div>
-                        <button onClick={handleNextMonth} className="px-3 py-2 rounded-md hover:bg-surface-variant transition-colors">
-                            <span className="material-symbols-outlined text-sm">chevron_right</span>
-                        </button>
+            <header className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex justify-between items-center w-full sm:w-auto">
+                    <div>
+                        <h1 className="font-['Inter'] font-black text-3xl uppercase tracking-tighter leading-none">PLAN</h1>
+                        <span className="font-['Space_Grotesk'] text-primary font-bold tracking-widest text-[10px]">MACROCICLO</span>
                     </div>
 
+                    {/* Sync Strava (Visible on mobile next to title) */}
                     {stravaTokens?.accessToken && (
                         <button
                             onClick={handleSyncStrava}
                             disabled={isSyncingStrava}
-                            className="bg-orange-500/10 text-[#FC4C02] border border-[#FC4C02]/30 hover:bg-[#FC4C02]/20 px-3 py-1.5 rounded-md font-['Space_Grotesk'] text-[10px] uppercase font-bold tracking-widest flex items-center gap-1.5 transition-all"
+                            className="sm:hidden bg-orange-500/10 text-[#FC4C02] border border-[#FC4C02]/30 px-3 py-1.5 rounded-md font-['Space_Grotesk'] text-[10px] uppercase font-bold tracking-widest flex items-center gap-1.5 transition-all"
+                        >
+                            <span className={`material-symbols-outlined text-[14px] ${isSyncingStrava ? 'animate-spin' : ''}`}>sync</span>
+                            {isSyncingStrava ? 'SYNC' : 'SYNC'}
+                        </button>
+                    )}
+                </div>
+
+                <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
+                    <div className="flex bg-surface-container-high rounded-lg p-0.5 flex-1 sm:flex-initial">
+                        <button onClick={handlePrevMonth} className="px-2 py-2 rounded-md hover:bg-surface-variant transition-colors">
+                            <span className="material-symbols-outlined text-sm">chevron_left</span>
+                        </button>
+                        <div className="flex-1 sm:min-w-[100px] py-2 font-['Space_Grotesk'] font-bold text-[11px] text-center uppercase tracking-widest flex flex-col justify-center">
+                            <span>{monthNames[month]}</span>
+                            <span className="text-[9px] opacity-40">{year}</span>
+                        </div>
+                        <button onClick={handleNextMonth} className="px-2 py-2 rounded-md hover:bg-surface-variant transition-colors">
+                            <span className="material-symbols-outlined text-sm">chevron_right</span>
+                        </button>
+                    </div>
+
+                    {/* Sync Strava (Visible on desktop/tablet) */}
+                    {stravaTokens?.accessToken && (
+                        <button
+                            onClick={handleSyncStrava}
+                            disabled={isSyncingStrava}
+                            className="hidden sm:flex bg-orange-500/10 text-[#FC4C02] border border-[#FC4C02]/30 hover:bg-[#FC4C02]/20 px-3 py-2 rounded-md font-['Space_Grotesk'] text-[10px] uppercase font-bold tracking-widest items-center gap-1.5 transition-all"
                         >
                             <span className={`material-symbols-outlined text-[14px] ${isSyncingStrava ? 'animate-spin' : ''}`}>sync</span>
                             {isSyncingStrava ? 'SINCRONIZANDO...' : 'SYNC STRAVA'}
