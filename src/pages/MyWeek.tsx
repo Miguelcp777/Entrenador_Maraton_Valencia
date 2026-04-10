@@ -59,11 +59,11 @@ export default function MyWeek() {
                                         <span className={`material-symbols-outlined text-sm ${focus.color}`}>{focus.icon}</span>
                                         <span className={`font-['Space_Grotesk'] text-[10px] uppercase font-bold tracking-widest ${focus.color}`}>{focus.label}</span>
                                     </div>
-                                    <h3 className={`font-['Inter'] font-extrabold text-sm md:text-md text-on-surface max-w-[150px] md:max-w-xs overflow-hidden text-ellipsis whitespace-nowrap`} title={detailMock}>{detailMock}</h3>
+                                    <h3 className={`font-['Inter'] font-extrabold text-sm text-on-surface max-w-[150px] overflow-hidden text-ellipsis whitespace-nowrap`} title={detailMock}>{detailMock}</h3>
                                 </div>
                             </div>
                             <div className="text-right">
-                                <span className={`font-['Inter'] font-black text-xl md:text-3xl ${isInactive ? 'text-zinc-700' : 'text-on-surface/50 group-hover:text-primary tracking-tighter'} transition-colors`}>{metricMock}</span>
+                                <span className={`font-['Inter'] font-black text-xl ${isInactive ? 'text-zinc-700' : 'text-on-surface/50 group-hover:text-primary tracking-tighter'} transition-colors`}>{metricMock}</span>
                             </div>
                         </div>
                     );

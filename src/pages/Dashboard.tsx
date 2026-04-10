@@ -139,7 +139,7 @@ export default function Dashboard() {
             <DashboardAIEvaluation />
 
             {/* Hybrid Status Bento */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
                 {/* Status Indicator Card */}
                 <div className="bg-surface-container-low rounded-xl p-6 ambient-glow border border-primary/5">
                     <div className="flex justify-between items-start mb-6">

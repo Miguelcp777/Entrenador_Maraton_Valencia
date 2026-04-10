@@ -238,7 +238,7 @@ Tus respuestas deben ser concisas, al punto, llenas de determinación técnica y
             <div className="flex-1 overflow-y-auto min-h-0 bg-surface-container/30 backdrop-blur-md rounded-2xl border border-white/5 p-4 mb-4 space-y-6 shadow-inner custom-scrollbar relative">
                 {messages.map((msg, i) => (
                     <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[85%] rounded-2xl p-4 md:p-5 ${msg.role === 'user' ? 'bg-surface-high border border-white/10 rounded-br-sm text-on-surface' : 'bg-primary/5 shadow-[0_0_15px_rgba(255,102,0,0.05)] border-l-2 border-primary rounded-bl-sm text-on-surface'}`}>
+                        <div className={`max-w-[85%] rounded-2xl p-4 ${msg.role === 'user' ? 'bg-surface-high border border-white/10 rounded-br-sm text-on-surface' : 'bg-primary/5 shadow-[0_0_15px_rgba(255,102,0,0.05)] border-l-2 border-primary rounded-bl-sm text-on-surface'}`}>
                             {msg.role === 'model' && (
                                 <div className="flex items-center gap-2 mb-2 text-primary">
                                     <span className="material-symbols-outlined text-[12px]">smart_toy</span>

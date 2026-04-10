@@ -75,7 +75,7 @@ export default function Today() {
                     <p className="text-on-surface-variant text-sm leading-relaxed max-w-md">
                         {detailMock}
                     </p>
-                    <div className="mt-6 flex gap-4 md:gap-8 border-t border-white/5 pt-6">
+                    <div className="mt-6 flex gap-4 border-t border-white/5 pt-6">
                         <div className="flex flex-col">
                             <span className="font-['Space_Grotesk'] text-[10px] text-outline uppercase tracking-widest mb-1">Expected Volume</span>
                             <span className="font-['Inter'] font-black text-2xl">{metricMock}</span>
@@ -91,7 +91,7 @@ export default function Today() {
                             }[maxZone as 'z1' | 'z2' | 'z3' | 'z4' | 'z5'];
 
                             return (
-                                <div className="flex flex-col border-l border-white/10 pl-4 md:pl-8">
+                                <div className="flex flex-col border-l border-white/10 pl-4">
                                     <span className={`font-['Space_Grotesk'] text-[10px] uppercase tracking-widest mb-1 ${colorClass.replace('400', '500/70').replace('500', '500/70')}`}>
                                         Target HR (Zonas {hrZonesTarget[0].toUpperCase()}{hrZonesTarget.length > 1 ? `-${maxZone.toUpperCase()}` : ''})
                                     </span>

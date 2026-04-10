@@ -220,7 +220,7 @@ export default function CalendarView() {
             </div>
 
             {/* Calendar Grid */}
-            <div className="grid grid-cols-7 gap-1.5 md:gap-2">
+            <div className="grid grid-cols-7 gap-1.5">
                 {blanks.map((b) => (
                     <div key={`blank-${b}`} className="min-h-[80px] bg-surface-container-lowest/30 rounded-lg"></div>
                 ))}
@@ -254,7 +254,7 @@ export default function CalendarView() {
                         <button
                             key={d}
                             onClick={() => setSelectedDate(new Date(year, month, d))}
-                            className={`flex flex-col min-h-[80px] md:min-h-[100px] p-1 md:p-2 rounded-lg border-t-2 relative overflow-hidden transition-all text-left group hover:brightness-125
+                            className={`flex flex-col min-h-[80px] p-1 rounded-lg border-t-2 relative overflow-hidden transition-all text-left group hover:brightness-125
                 ${phase.border}
                 ${statusClass}
                 ${isToday ? 'ring-2 ring-primary bg-primary/10' : 'bg-surface-container-low'}
@@ -303,7 +303,7 @@ export default function CalendarView() {
                             </div>
 
                             <div className="z-10 mt-2 w-full">
-                                <span className="block font-['Space_Grotesk'] text-[8px] md:text-[9px] uppercase tracking-tighter text-zinc-400 truncate">
+                                <span className="block font-['Space_Grotesk'] text-[8px] uppercase tracking-tighter text-zinc-400 truncate">
                                     {focus.label}
                                 </span>
                                 {/* Visual marker for phase */}
