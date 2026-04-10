@@ -242,10 +242,10 @@ export default function CalendarView() {
 
                     if (dayLogs.length > 0) {
                         statusClass = 'border-green-500/50 outline outline-1 outline-green-500/30';
-                        statusIcon = <span className="absolute top-1 left-1 text-green-500 material-symbols-outlined z-20" style={{ fontSize: '14px', fontVariationSettings: "'FILL' 1" }}>check_circle</span>;
+                        statusIcon = <span className="text-green-500 material-symbols-outlined z-20" style={{ fontSize: '12px', fontVariationSettings: "'FILL' 1" }}>check_circle</span>;
                     } else if (isPast && !isRestDay) {
                         statusClass = 'border-red-500/50 opacity-60 grayscale';
-                        statusIcon = <span className="absolute top-1 left-1 text-red-500 material-symbols-outlined z-20" style={{ fontSize: '14px', fontVariationSettings: "'FILL' 1" }}>cancel</span>;
+                        statusIcon = <span className="text-red-500 material-symbols-outlined z-20" style={{ fontSize: '12px', fontVariationSettings: "'FILL' 1" }}>cancel</span>;
                     } else if (isPast && isRestDay) {
                         statusClass = 'border-zinc-700/30 opacity-40 grayscale';
                     }
@@ -265,15 +265,18 @@ export default function CalendarView() {
                                 <div className="absolute top-0 right-0 w-8 h-8 bg-primary blur-xl opacity-30 z-0"></div>
                             )}
 
-                            <div className="flex justify-between items-start mb-auto z-10 w-full relative">
-                                <span className={`font-['Inter'] font-bold text-sm ${isToday ? 'text-primary' : 'text-on-surface'} ${statusIcon ? 'ml-3' : ''}`}>
+                            <div className="flex justify-between items-center z-10 w-full mb-1">
+                                <span className={`font-['Inter'] font-black text-xs ${isToday ? 'text-primary' : 'text-on-surface'}`}>
                                     {d}
                                 </span>
+                                {statusIcon}
+                            </div>
 
-                                {/* Top Right Icons: Show default if no logs, else stack all log icons */}
-                                <div className="flex flex-col gap-0.5 items-end">
+                            <div className="flex-1 flex flex-col justify-end z-10 w-full">
+                                {/* Activity Icons Row */}
+                                <div className="flex flex-wrap gap-0.5 mb-1">
                                     {dayLogs.length === 0 ? (
-                                        <span className="material-symbols-outlined text-[12px] opacity-60 mt-0.5 group-hover:opacity-100 transition-opacity" style={{ fontVariationSettings: "'FILL' 1" }}>
+                                        <span className="material-symbols-outlined text-[10px] opacity-40 group-hover:opacity-100 transition-opacity" style={{ fontVariationSettings: "'FILL' 1" }}>
                                             {focus.icon}
                                         </span>
                                     ) : (
@@ -283,7 +286,7 @@ export default function CalendarView() {
 
                                             if (logItem.metricas_extra && logItem.metricas_extra.type) {
                                                 const type = logItem.metricas_extra.type;
-                                                extraClass = 'text-[#FC4C02] group-hover:scale-125 transition-transform'; // Strava orange highlight
+                                                extraClass = 'text-[#FC4C02] scale-110';
 
                                                 if (type === 'Run' || type === 'VirtualRun') dynamicIcon = 'directions_run';
                                                 else if (type === 'TrailRun') dynamicIcon = 'landscape';
@@ -293,7 +296,7 @@ export default function CalendarView() {
                                             }
 
                                             return (
-                                                <span key={idx} className={`material-symbols-outlined text-[12px] opacity-80 mt-0.5 group-hover:opacity-100 transition-all ${extraClass}`} title={logItem.sentimientos} style={{ fontVariationSettings: "'FILL' 1" }}>
+                                                <span key={idx} className={`material-symbols-outlined text-[10px] transition-all ${extraClass}`} style={{ fontVariationSettings: "'FILL' 1" }}>
                                                     {dynamicIcon}
                                                 </span>
                                             );
@@ -303,7 +306,7 @@ export default function CalendarView() {
                             </div>
 
                             <div className="z-10 mt-2 w-full">
-                                <span className="block font-['Space_Grotesk'] text-[8px] uppercase tracking-tighter text-zinc-400 truncate">
+                                <span className="block font-['Space_Grotesk'] text-[7px] leading-tight uppercase tracking-tighter text-zinc-500 truncate">
                                     {focus.label}
                                 </span>
                                 {/* Visual marker for phase */}
