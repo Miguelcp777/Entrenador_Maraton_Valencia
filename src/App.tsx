@@ -13,7 +13,7 @@ import Login from './pages/Login';
 
 function AppLayout() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="max-w-md mx-auto min-h-screen pb-24 relative bg-[#09090b] border-x border-white/5 shadow-2xl">
       <TopAppBar />
       <main className="flex-1">
         <Routes>
@@ -26,7 +26,9 @@ function AppLayout() {
           <Route path="/strava/callback" element={<StravaCallback />} />
         </Routes>
       </main>
-      <BottomNavBar />
+      <div className="max-w-md mx-auto w-full fixed bottom-0 left-0 right-0 z-50">
+        <BottomNavBar />
+      </div>
     </div>
   );
 }

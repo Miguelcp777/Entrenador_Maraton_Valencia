@@ -12,7 +12,7 @@ export default function BottomNavBar() {
     ];
 
     return (
-        <nav className="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pt-3 pb-8 bg-[#131316]/90 backdrop-blur-xl z-50 rounded-t-xl border-t border-white/5 shadow-[0_-4px_24px_rgba(255,102,0,0.12)]">
+        <nav className="w-full flex justify-around items-center px-4 pt-3 pb-8 bg-[#131316]/90 backdrop-blur-xl rounded-t-xl border-t border-white/5 shadow-[0_-4px_24px_rgba(255,102,0,0.12)]">
             {navItems.map((item) => {
                 const isActive = location.pathname === item.path;
 

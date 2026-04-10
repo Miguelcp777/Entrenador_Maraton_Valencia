@@ -23,8 +23,8 @@ export default function Login({ onLogin }: Props) {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-6 bg-black text-white selection:bg-primary selection:text-black">
-            <div className="w-full max-w-sm space-y-8 bg-surface-container-low p-8 rounded-2xl border border-white/5 shadow-2xl relative overflow-hidden">
+        <div className="min-h-screen flex items-center justify-center p-6 bg-[#09090b] text-white selection:bg-primary selection:text-black">
+            <div className="w-full max-w-sm mx-auto space-y-8 bg-surface-container-low p-8 rounded-2xl border border-white/5 shadow-2xl relative overflow-hidden">
                 {/* Visual Flair */}
                 <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
                     <span className="material-symbols-outlined text-9xl text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>lock</span>
