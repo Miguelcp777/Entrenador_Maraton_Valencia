@@ -13,7 +13,7 @@ import Login from './pages/Login';
 
 function AppLayout() {
   return (
-    <div className="max-w-md mx-auto min-h-screen pb-24 relative bg-[#09090b] border-x border-white/5 shadow-2xl">
+    <div className="max-w-md mx-auto min-h-screen pb-24 relative bg-[#09090b] shadow-[0_0_50px_rgba(0,0,0,0.8)] border-x border-white/5 overflow-hidden">
       <TopAppBar />
       <main className="flex-1">
         <Routes>
