@@ -61,14 +61,13 @@ export default function MyWeek() {
                                     </div>
                                     <h3 className={`font-['Inter'] font-extrabold text-sm text-on-surface max-w-[150px] overflow-hidden text-ellipsis whitespace-nowrap`} title={detailMock}>{detailMock}</h3>
                                 </div>
+                                <div className="text-right flex-shrink-0 ml-2">
+                                    <span className={`block truncate max-w-[90px] font-['Inter'] font-black text-lg ${isInactive ? 'text-zinc-700' : 'text-on-surface/50 group-hover:text-primary tracking-tighter'} transition-colors`}>{metricMock}</span>
+                                </div>
                             </div>
-                            <div className="text-right">
-                                <span className={`font-['Inter'] font-black text-xl ${isInactive ? 'text-zinc-700' : 'text-on-surface/50 group-hover:text-primary tracking-tighter'} transition-colors`}>{metricMock}</span>
-                            </div>
-                        </div>
-                    );
+                            );
                 })}
-            </div>
+                        </div>
         </div>
-    );
+            );
 }

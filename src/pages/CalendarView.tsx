@@ -242,10 +242,10 @@ export default function CalendarView() {
 
                     if (dayLogs.length > 0) {
                         statusClass = 'border-green-500/50 outline outline-1 outline-green-500/30';
-                        statusIcon = <span className="absolute top-1 left-1 text-[12px] text-green-500 material-symbols-outlined z-20" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>;
+                        statusIcon = <span className="absolute top-1 left-1 text-green-500 material-symbols-outlined z-20" style={{ fontSize: '14px', fontVariationSettings: "'FILL' 1" }}>check_circle</span>;
                     } else if (isPast && !isRestDay) {
                         statusClass = 'border-red-500/50 opacity-60 grayscale';
-                        statusIcon = <span className="absolute top-1 left-1 text-[12px] text-red-500 material-symbols-outlined z-20" style={{ fontVariationSettings: "'FILL' 1" }}>cancel</span>;
+                        statusIcon = <span className="absolute top-1 left-1 text-red-500 material-symbols-outlined z-20" style={{ fontSize: '14px', fontVariationSettings: "'FILL' 1" }}>cancel</span>;
                     } else if (isPast && isRestDay) {
                         statusClass = 'border-zinc-700/30 opacity-40 grayscale';
                     }

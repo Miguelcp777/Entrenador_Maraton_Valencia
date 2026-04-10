@@ -96,11 +96,11 @@ export default function DashboardStats() {
 
     return (
         <div className="bg-surface-container-low rounded-xl p-6">
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-2 sm:gap-0">
                 <span className="font-['Space_Grotesk'] text-[10px] uppercase font-bold tracking-widest text-zinc-500">Métricas Acumuladas</span>
 
                 {/* Toggle */}
-                <div className="flex bg-surface-container-highest rounded-lg p-1">
+                <div className="flex self-start sm:self-auto bg-surface-container-highest rounded-lg p-1">
                     <button
                         onClick={() => setView('week')}
                         className={`text-[10px] font-['Space_Grotesk'] font-bold uppercase tracking-widest px-3 py-1 rounded-md transition-colors ${view === 'week' ? 'bg-primary text-black' : 'text-zinc-500'}`}
@@ -133,14 +133,14 @@ export default function DashboardStats() {
                         <div>
                             <span className="block text-[9px] font-bold tracking-widest text-zinc-500 uppercase mb-1">Volumen Acumulado</span>
                             <div className="flex items-baseline gap-1">
-                                <h2 className="font-['Inter'] font-black text-4xl tracking-tighter text-white">{totalKm.toFixed(1)}</h2>
+                                <h2 className="font-['Inter'] font-black text-3xl tracking-tighter text-white">{totalKm.toFixed(1)}</h2>
                                 <span className="font-['Space_Grotesk'] text-sm text-zinc-500">KM</span>
                             </div>
                         </div>
                         <div>
                             <span className="block text-[9px] font-bold tracking-widest text-zinc-500 uppercase mb-1">Energía Consumida</span>
                             <div className="flex items-baseline gap-1">
-                                <h2 className="font-['Inter'] font-black text-4xl tracking-tighter text-primary">{Math.round(totalCalories)}</h2>
+                                <h2 className="font-['Inter'] font-black text-3xl tracking-tighter text-primary">{Math.round(totalCalories)}</h2>
                                 <span className="font-['Space_Grotesk'] text-sm text-zinc-500">KCAL</span>
                             </div>
                         </div>
