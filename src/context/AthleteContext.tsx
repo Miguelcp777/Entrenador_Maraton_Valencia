@@ -72,6 +72,16 @@ export function AthleteProvider({ children }: { children: ReactNode }) {
                 if (data.altura) setHeight(data.altura);
                 if (data.fecha_nacimiento) setBirthDate(data.fecha_nacimiento);
                 if (data.fc_reposo) setRestingHR(data.fc_reposo);
+                // ✅ Persist Strava tokens from DB (survives cache clears)
+                if (data.strava_tokens) {
+                    setStravaTokens(data.strava_tokens);
+                    localStorage.setItem('strava_tokens', JSON.stringify(data.strava_tokens));
+                }
+                // ✅ Persist Gemini API key from DB (survives cache clears)
+                if (data.gemini_api_key) {
+                    setGeminiApiKey(data.gemini_api_key);
+                    localStorage.setItem('athlete_geminiApiKey', JSON.stringify(data.gemini_api_key));
+                }
             }
 
             // Calculate Compliance Score from logs
@@ -147,10 +157,22 @@ export function AthleteProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         localStorage.setItem('athlete_geminiApiKey', JSON.stringify(geminiApiKey));
+        // Also persist to Supabase if the key is non-empty
+        if (geminiApiKey) {
+            supabase.from('perfil_atleta').select('id').limit(1).single().then(({ data }) => {
+                if (data?.id) supabase.from('perfil_atleta').update({ gemini_api_key: geminiApiKey }).eq('id', data.id);
+            });
+        }
     }, [geminiApiKey]);
 
     useEffect(() => {
         localStorage.setItem('strava_tokens', JSON.stringify(stravaTokens));
+        // Also persist to Supabase so tokens survive across browsers/devices
+        if (stravaTokens?.accessToken) {
+            supabase.from('perfil_atleta').select('id').limit(1).single().then(({ data }) => {
+                if (data?.id) supabase.from('perfil_atleta').update({ strava_tokens: stravaTokens }).eq('id', data.id);
+            });
+        }
     }, [stravaTokens]);
 
     const dob = new Date(birthDate);
