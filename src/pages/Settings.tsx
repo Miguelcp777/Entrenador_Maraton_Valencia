@@ -314,7 +314,7 @@ export default function Settings() {
                         </div>
                     ) : (
                         <a
-                            href="https://www.strava.com/oauth/authorize?client_id=223033&response_type=code&redirect_uri=http://localhost:5173/strava/callback&approval_prompt=force&scope=activity:read_all"
+                            href={`https://www.strava.com/oauth/authorize?client_id=${import.meta.env.VITE_STRAVA_CLIENT_ID || '223033'}&response_type=code&redirect_uri=${window.location.origin}/strava/callback&approval_prompt=force&scope=activity:read_all`}
                             className="block w-full text-center bg-[#FC4C02] text-white py-3 rounded-lg font-['Inter'] font-bold text-sm tracking-widest uppercase hover:bg-[#E34402] transition-colors"
                         >
                             Conectar con Strava
