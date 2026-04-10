@@ -226,13 +226,13 @@ Tus respuestas deben ser concisas, al punto, llenas de determinación técnica y
         <div
             className="fixed flex flex-col bg-[#09090b]"
             style={{
-                top: '72px',       // TopAppBar height
-                bottom: '84px',    // BottomNavBar height
+                top: '72px',
+                bottom: '84px',
                 left: '50%',
                 transform: 'translateX(-50%)',
                 width: '100%',
                 maxWidth: '430px',
-                padding: '16px 16px 0 16px',
+                padding: '12px 16px 12px 16px',
             }}
         >
             <header className="mb-6 flex-shrink-0">
