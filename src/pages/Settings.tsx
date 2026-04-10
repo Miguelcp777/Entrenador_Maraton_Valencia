@@ -39,7 +39,10 @@ export default function Settings() {
                     avatar_url: avatarUrl,
                     altura: height,
                     fecha_nacimiento: birthDate,
-                    fc_reposo: restingHR
+                    fc_reposo: restingHR,
+                    // ✅ Persist Gemini API key and Strava tokens permanently
+                    ...(geminiApiKey ? { gemini_api_key: geminiApiKey } : {}),
+                    ...(stravaTokens?.accessToken ? { strava_tokens: stravaTokens } : {}),
                 }).eq('id', data.id);
 
                 if (error) {
@@ -287,6 +290,11 @@ export default function Settings() {
                         placeholder="AIzaSy..."
                         className="w-full bg-surface-container-lowest border-none font-['Space_Grotesk'] py-3 px-4 rounded-lg placeholder:text-surface-container-highest focus:ring-1 focus:ring-teal-500/50 transition-all text-sm mb-2 text-teal-400 font-bold tracking-widest"
                     />
+                    {geminiApiKey && (
+                        <span className="block text-[10px] text-teal-500 font-bold font-['Space_Grotesk'] uppercase tracking-widest mb-2">
+                            ✅ API Key activada — se guardará al pulsar "Aplicar Biometría"
+                        </span>
+                    )}
                     <p className="font-['Space_Grotesk'] text-[10px] text-zinc-400 leading-relaxed">
                         Requerida para activar el Coach de IA. Almacenada estrictamente en LocalStorage. Si se borra caché, deberás introducirla de nuevo.
                     </p>
