@@ -209,15 +209,39 @@ Tus respuestas deben ser concisas, al punto, llenas de determinación técnica y
 
     if (!geminiApiKey) {
         return (
-            <div className="max-w-2xl mx-auto px-6 pb-32 pt-4 flex flex-col justify-center items-center h-[80vh] text-center">
-                <span className="material-symbols-outlined text-6xl text-primary mb-4">smart_toy</span>
-                <h1 className="font-['Inter'] font-black text-3xl uppercase tracking-tighter mb-4">Coach Desconectado</h1>
-                <p className="font-['Space_Grotesk'] text-zinc-400 mb-8 max-w-sm leading-relaxed">
-                    El motor de inteligencia artificial necesita una API Key de Google Gemini para arrancar. Sin ella, el feedback cognitivo está muerto.
-                </p>
-                <Link to="/settings" className="bg-primary text-black px-8 py-3 rounded-xl font-['Inter'] font-black uppercase text-sm tracking-widest shadow-lg shadow-primary/20 active:scale-95 transition-transform">
-                    Conectar Motor en Ajustes
-                </Link>
+            <div
+                className="fixed flex flex-col bg-[#09090b]"
+                style={{
+                    top: '72px',
+                    bottom: '84px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: '100%',
+                    maxWidth: '430px',
+                    padding: '0px 16px 12px 16px',
+                }}
+            >
+                <header className="mb-4 pt-2 flex-shrink-0">
+                    <div className="flex justify-between items-end mb-2">
+                        <h1 className="font-['Inter'] font-black text-4xl uppercase tracking-tighter leading-none">AI COACH</h1>
+                        <span className="font-['Space_Grotesk'] text-red-500 font-bold tracking-widest text-[10px] flex items-center gap-1">
+                            <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                            OFFLINE
+                        </span>
+                    </div>
+                    <div className="h-1 w-12 bg-red-500"></div>
+                </header>
+
+                <div className="flex-1 flex flex-col justify-center items-center text-center p-6 bg-surface-container/30 backdrop-blur-md rounded-2xl border border-white/5 mb-4 border-red-500/20">
+                    <span className="material-symbols-outlined text-6xl text-red-500 mb-4 animate-pulse">cloud_off</span>
+                    <h2 className="font-['Inter'] font-black text-2xl uppercase tracking-tighter mb-4 text-zinc-200">Motor Desconectado</h2>
+                    <p className="font-['Space_Grotesk'] text-sm text-zinc-500 mb-8 max-w-[280px] leading-relaxed">
+                        El núcleo de inteligencia artificial requiere una API Key de Gemini para funcionar. Conéctala en los ajustes para despertar el sistema.
+                    </p>
+                    <Link to="/settings" className="bg-red-500/10 text-red-500 border border-red-500/50 px-8 py-4 rounded-xl font-['Inter'] font-black uppercase text-xs tracking-widest hover:bg-red-500 hover:text-black transition-all active:scale-95">
+                        Ir a Ajustes del Sistema
+                    </Link>
+                </div>
             </div>
         );
     }
@@ -232,18 +256,18 @@ Tus respuestas deben ser concisas, al punto, llenas de determinación técnica y
                 transform: 'translateX(-50%)',
                 width: '100%',
                 maxWidth: '430px',
-                padding: '12px 16px 12px 16px',
+                padding: '0px 16px 12px 16px',
             }}
         >
-            <header className="mb-6 flex-shrink-0">
+            <header className="mb-4 pt-2 flex-shrink-0">
                 <div className="flex justify-between items-end mb-2">
                     <h1 className="font-['Inter'] font-black text-4xl uppercase tracking-tighter leading-none">AI COACH</h1>
-                    <span className="font-['Space_Grotesk'] text-primary font-bold tracking-widest text-[10px] flex items-center gap-1">
-                        <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                    <span className="font-['Space_Grotesk'] text-emerald-500 font-bold tracking-widest text-[10px] flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                         ONLINE
                     </span>
                 </div>
-                <div className="h-1 w-12 kinetic-gradient"></div>
+                <div className="h-1 w-12 bg-emerald-500"></div>
             </header>
 
             <div className="flex-1 overflow-y-auto min-h-0 bg-surface-container/30 backdrop-blur-md rounded-2xl border border-white/5 p-4 mb-4 space-y-6 shadow-inner custom-scrollbar relative">
