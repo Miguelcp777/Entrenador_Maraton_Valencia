@@ -95,7 +95,7 @@ export default function DashboardStats() {
     const hrMaxStr = maxHr > 0 ? maxHr : '--';
 
     return (
-        <div className="bg-surface-container-low rounded-xl p-6">
+        <div className="bg-surface-container-low rounded-xl p-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-2 sm:gap-0">
                 <span className="font-['Space_Grotesk'] text-[10px] uppercase font-bold tracking-widest text-zinc-500">Métricas Acumuladas</span>
 
@@ -147,7 +147,7 @@ export default function DashboardStats() {
                     </div>
 
                     {/* Secondary Stats */}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-4 gap-x-2 bg-surface-container-highest/50 p-4 rounded-xl border border-white/5">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-2 bg-surface-container-highest/50 p-3 rounded-xl border border-white/5">
 
                         <div>
                             <span className="block text-[9px] font-bold tracking-widest text-zinc-500 uppercase mb-0.5">Ritmo Medio</span>

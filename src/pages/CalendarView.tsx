@@ -176,7 +176,7 @@ export default function CalendarView() {
     };
 
     return (
-        <div className="max-w-2xl mx-auto px-6 pb-32 pt-4">
+        <div className="max-w-2xl mx-auto px-4 pb-32 pt-4">
             {/* Header */}
             <header className="mb-8 flex items-center justify-between">
                 <div>
@@ -213,14 +213,14 @@ export default function CalendarView() {
             {/* Weekday headers */}
             <div className="grid grid-cols-7 gap-1 mb-2">
                 {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map((day) => (
-                    <div key={day} className="text-center font-['Space_Grotesk'] text-[10px] text-zinc-500 font-bold uppercase tracking-widest py-2">
+                    <div key={day} className="text-center font-['Space_Grotesk'] text-[10px] text-zinc-600 font-bold uppercase tracking-widest py-2">
                         {day}
                     </div>
                 ))}
             </div>
 
             {/* Calendar Grid */}
-            <div className="grid grid-cols-7 gap-1.5">
+            <div className="grid grid-cols-7 gap-1">
                 {blanks.map((b) => (
                     <div key={`blank-${b}`} className="min-h-[80px] bg-surface-container-lowest/30 rounded-lg"></div>
                 ))}
