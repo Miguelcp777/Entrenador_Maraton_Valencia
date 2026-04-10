@@ -30,6 +30,8 @@ interface AthleteContextProps {
     complianceScore: number;
     weeklyComplianceScore: number;
     hrZones: HRZones;
+    stravaTokens: any;
+    setStravaTokens: (tokens: any) => void;
 }
 
 const AthleteContext = createContext<AthleteContextProps | undefined>(undefined);
@@ -55,6 +57,7 @@ export function AthleteProvider({ children }: { children: ReactNode }) {
     const [birthDate, setBirthDate] = useState<string>(() => getInitialState('athlete_birthDate', "1990-01-01"));
     const [restingHR, setRestingHR] = useState<number>(() => getInitialState('athlete_restingHR', 50));
     const [geminiApiKey, setGeminiApiKey] = useState<string>(() => getInitialState('athlete_geminiApiKey', ""));
+    const [stravaTokens, setStravaTokens] = useState<any>(() => getInitialState('strava_tokens', null));
     const [complianceScore, setComplianceScore] = useState<number>(0);
     const [weeklyComplianceScore, setWeeklyComplianceScore] = useState<number>(0);
 
@@ -146,6 +149,10 @@ export function AthleteProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('athlete_geminiApiKey', JSON.stringify(geminiApiKey));
     }, [geminiApiKey]);
 
+    useEffect(() => {
+        localStorage.setItem('strava_tokens', JSON.stringify(stravaTokens));
+    }, [stravaTokens]);
+
     const dob = new Date(birthDate);
     const todayDate = new Date();
     let age = todayDate.getFullYear() - dob.getFullYear();
@@ -176,7 +183,9 @@ export function AthleteProvider({ children }: { children: ReactNode }) {
             geminiApiKey, setGeminiApiKey,
             complianceScore,
             weeklyComplianceScore,
-            hrZones
+            hrZones,
+            stravaTokens,
+            setStravaTokens
         }}>
             {children}
         </AthleteContext.Provider>

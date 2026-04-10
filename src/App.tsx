@@ -7,6 +7,7 @@ import Today from './pages/Today';
 import CalendarView from './pages/CalendarView';
 import Settings from './pages/Settings';
 import CoachChat from './pages/CoachChat';
+import StravaCallback from './pages/StravaCallback';
 
 function AppLayout() {
   return (
@@ -20,6 +21,7 @@ function AppLayout() {
           <Route path="/today" element={<Today />} />
           <Route path="/coach" element={<CoachChat />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/strava/callback" element={<StravaCallback />} />
         </Routes>
       </main>
       <BottomNavBar />

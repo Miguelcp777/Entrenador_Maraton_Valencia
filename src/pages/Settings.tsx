@@ -9,7 +9,7 @@ export default function Settings() {
         weight, setWeight, targetWeight, setTargetWeight,
         name, setName, avatarUrl, setAvatarUrl,
         height, setHeight, birthDate, setBirthDate, restingHR, setRestingHR,
-        geminiApiKey, setGeminiApiKey
+        geminiApiKey, setGeminiApiKey, stravaTokens, setStravaTokens
     } = useAthlete();
     const [isUpdating, setIsUpdating] = useState(false);
 
@@ -289,6 +289,39 @@ export default function Settings() {
                     />
                     <p className="font-['Space_Grotesk'] text-[10px] text-zinc-400 leading-relaxed">
                         Requerida para activar el Coach de IA. Almacenada estrictamente en LocalStorage. Si se borra caché, deberás introducirla de nuevo.
+                    </p>
+                </div>
+
+                {/* Strava Auth Block */}
+                <div className="bg-surface-container-low p-6 rounded-xl border border-white/5 opacity-70">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                            <span className="material-symbols-outlined text-orange-500 text-sm">sync</span>
+                            <h2 className="font-['Inter'] font-bold text-md uppercase tracking-tighter">Strava Sync</h2>
+                        </div>
+                    </div>
+                    {stravaTokens?.accessToken ? (
+                        <div className="bg-surface-container-lowest p-3 rounded-lg border border-orange-500/30 text-center">
+                            <span className="block font-['Space_Grotesk'] text-[10px] text-orange-500 uppercase tracking-widest font-bold mb-1">Estado de Conexión</span>
+                            <span className="block text-sm font-bold font-['Inter'] text-zinc-200">✅ Conectado a Strava</span>
+                            <button
+                                type="button"
+                                onClick={() => setStravaTokens({ accessToken: null, refreshToken: null, expiresAt: null })}
+                                className="mt-2 text-[10px] text-zinc-500 underline uppercase"
+                            >
+                                Desconectar
+                            </button>
+                        </div>
+                    ) : (
+                        <a
+                            href="https://www.strava.com/oauth/authorize?client_id=223033&response_type=code&redirect_uri=http://localhost:5173/strava/callback&approval_prompt=force&scope=activity:read_all"
+                            className="block w-full text-center bg-[#FC4C02] text-white py-3 rounded-lg font-['Inter'] font-bold text-sm tracking-widest uppercase hover:bg-[#E34402] transition-colors"
+                        >
+                            Conectar con Strava
+                        </a>
+                    )}
+                    <p className="font-['Space_Grotesk'] text-[10px] text-zinc-400 leading-relaxed mt-2">
+                        Autoriza a la aplicación a leer tus actividades de Strava (Garmin) para extraer automáticamente km, ritmo y tiempo.
                     </p>
                 </div>
 

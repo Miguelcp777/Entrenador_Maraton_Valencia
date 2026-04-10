@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { getPhaseForDate, getDailyFocus, getTrainingDetails } from '../utils/trainingLogic';
 import { useAthlete } from '../context/AthleteContext';
+import { syncStravaActivities } from '../utils/stravaSync';
 
 export default function CalendarView() {
-    const { hrZones } = useAthlete();
+    const { hrZones, stravaTokens } = useAthlete();
     const today = new Date();
+    const [isSyncingStrava, setIsSyncingStrava] = useState(false);
 
     // States for calendar navigation
     const [currentDate, setCurrentDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
@@ -21,6 +23,7 @@ export default function CalendarView() {
     const [duration, setDuration] = useState('');
     const [rpe, setRpe] = useState(7);
     const [feelings, setFeelings] = useState('');
+    const [dayLogsData, setDayLogsData] = useState<any[]>([]); // New array state
     const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
@@ -36,17 +39,20 @@ export default function CalendarView() {
                 .from('logs_entrenamiento')
                 .select('*')
                 .gte('fecha_completada', startOfDay.toISOString())
-                .lte('fecha_completada', endOfDay.toISOString())
-                .limit(1)
-                .maybeSingle(); // maybeSingle allows 0 rows without error
+                .lte('fecha_completada', endOfDay.toISOString());
 
-            if (data) {
-                setExistingLogId(data.id);
-                setDistance(data.distancia_real_km?.toString() || '');
-                setDuration(data.duracion_real_mins?.toString() || '');
-                setRpe(data.rpe_real || 7);
-                setFeelings(data.sentimientos || '');
+            if (data && data.length > 0) {
+                setDayLogsData(data);
+
+                // Bind the form to the first log just for legacy compatibility
+                const firstLog = data[0];
+                setExistingLogId(firstLog.id);
+                setDistance(firstLog.distancia_real_km?.toString() || '');
+                setDuration(firstLog.duracion_real_mins?.toString() || '');
+                setRpe(firstLog.rpe_real || 7);
+                setFeelings(firstLog.sentimientos || '');
             } else {
+                setDayLogsData([]);
                 setExistingLogId(null);
                 setDistance('');
                 setDuration('');
@@ -64,7 +70,7 @@ export default function CalendarView() {
             const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59).toISOString();
             const { data } = await supabase
                 .from('logs_entrenamiento')
-                .select('fecha_completada')
+                .select('fecha_completada, metricas_extra')
                 .gte('fecha_completada', startOfMonth)
                 .lte('fecha_completada', endOfMonth);
 
@@ -146,6 +152,29 @@ export default function CalendarView() {
 
     const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 
+    const handleSyncStrava = async () => {
+        if (!stravaTokens?.accessToken) return;
+        setIsSyncingStrava(true);
+        try {
+            const { data } = await supabase.from('perfil_atleta').select('id').limit(1).single();
+            if (data?.id) {
+                const result = await syncStravaActivities(stravaTokens.accessToken, data.id);
+                if (result.success) {
+                    alert(`✅ Sincronización completada. Actividades nuevas/actualizadas: ${result.count}`);
+                    window.location.reload();
+                } else {
+                    alert(`❌ Error al sincronizar: ${result.error}`);
+                }
+            } else {
+                alert("Error de Perfil.");
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsSyncingStrava(false);
+        }
+    };
+
     return (
         <div className="max-w-2xl mx-auto px-6 pb-32 pt-4">
             {/* Header */}
@@ -155,16 +184,29 @@ export default function CalendarView() {
                     <span className="font-['Space_Grotesk'] text-primary font-bold tracking-widest text-sm">MACROCICLO</span>
                 </div>
 
-                <div className="flex bg-surface-container-high rounded-lg p-1">
-                    <button onClick={handlePrevMonth} className="px-3 py-2 rounded-md hover:bg-surface-variant transition-colors">
-                        <span className="material-symbols-outlined text-sm">chevron_left</span>
-                    </button>
-                    <div className="px-4 py-2 font-['Space_Grotesk'] font-bold text-sm min-w-[120px] text-center uppercase tracking-widest">
-                        {monthNames[month]} {year}
+                <div className="flex flex-col items-end gap-2">
+                    <div className="flex bg-surface-container-high rounded-lg p-1">
+                        <button onClick={handlePrevMonth} className="px-3 py-2 rounded-md hover:bg-surface-variant transition-colors">
+                            <span className="material-symbols-outlined text-sm">chevron_left</span>
+                        </button>
+                        <div className="px-4 py-2 font-['Space_Grotesk'] font-bold text-sm min-w-[120px] text-center uppercase tracking-widest">
+                            {monthNames[month]} {year}
+                        </div>
+                        <button onClick={handleNextMonth} className="px-3 py-2 rounded-md hover:bg-surface-variant transition-colors">
+                            <span className="material-symbols-outlined text-sm">chevron_right</span>
+                        </button>
                     </div>
-                    <button onClick={handleNextMonth} className="px-3 py-2 rounded-md hover:bg-surface-variant transition-colors">
-                        <span className="material-symbols-outlined text-sm">chevron_right</span>
-                    </button>
+
+                    {stravaTokens?.accessToken && (
+                        <button
+                            onClick={handleSyncStrava}
+                            disabled={isSyncingStrava}
+                            className="bg-orange-500/10 text-[#FC4C02] border border-[#FC4C02]/30 hover:bg-[#FC4C02]/20 px-3 py-1.5 rounded-md font-['Space_Grotesk'] text-[10px] uppercase font-bold tracking-widest flex items-center gap-1.5 transition-all"
+                        >
+                            <span className={`material-symbols-outlined text-[14px] ${isSyncingStrava ? 'animate-spin' : ''}`}>sync</span>
+                            {isSyncingStrava ? 'SINCRONIZANDO...' : 'SYNC STRAVA'}
+                        </button>
+                    )}
                 </div>
             </header>
 
@@ -192,13 +234,13 @@ export default function CalendarView() {
                     const focus = getDailyFocus(currentDayOfWeek, phase.name);
                     const isRestDay = focus.label === 'OFF / Inactivo';
 
-                    // Check if a log exists
-                    const dayLog = monthLogs.find(log => new Date(log.fecha_completada).getDate() === d);
+                    // Check if logs exist
+                    const dayLogs = monthLogs.filter(log => new Date(log.fecha_completada).getDate() === d);
 
                     let statusClass = '';
                     let statusIcon = null;
 
-                    if (dayLog) {
+                    if (dayLogs.length > 0) {
                         statusClass = 'border-green-500/50 outline outline-1 outline-green-500/30';
                         statusIcon = <span className="absolute top-1 left-1 text-[12px] text-green-500 material-symbols-outlined z-20" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>;
                     } else if (isPast && !isRestDay) {
@@ -227,9 +269,37 @@ export default function CalendarView() {
                                 <span className={`font-['Inter'] font-bold text-sm ${isToday ? 'text-primary' : 'text-on-surface'} ${statusIcon ? 'ml-3' : ''}`}>
                                     {d}
                                 </span>
-                                <span className="material-symbols-outlined text-[12px] opacity-60 mt-0.5 group-hover:opacity-100 transition-opacity" style={{ fontVariationSettings: "'FILL' 1" }}>
-                                    {focus.icon}
-                                </span>
+
+                                {/* Top Right Icons: Show default if no logs, else stack all log icons */}
+                                <div className="flex flex-col gap-0.5 items-end">
+                                    {dayLogs.length === 0 ? (
+                                        <span className="material-symbols-outlined text-[12px] opacity-60 mt-0.5 group-hover:opacity-100 transition-opacity" style={{ fontVariationSettings: "'FILL' 1" }}>
+                                            {focus.icon}
+                                        </span>
+                                    ) : (
+                                        dayLogs.map((logItem, idx) => {
+                                            let dynamicIcon = focus.icon;
+                                            let extraClass = 'text-green-500';
+
+                                            if (logItem.metricas_extra && logItem.metricas_extra.type) {
+                                                const type = logItem.metricas_extra.type;
+                                                extraClass = 'text-[#FC4C02] group-hover:scale-125 transition-transform'; // Strava orange highlight
+
+                                                if (type === 'Run' || type === 'VirtualRun') dynamicIcon = 'directions_run';
+                                                else if (type === 'TrailRun') dynamicIcon = 'landscape';
+                                                else if (type === 'Walk') dynamicIcon = 'directions_walk';
+                                                else if (type === 'WeightTraining' || type === 'Crossfit') dynamicIcon = 'fitness_center';
+                                                else if (type === 'Workout') dynamicIcon = 'sports_gymnastics';
+                                            }
+
+                                            return (
+                                                <span key={idx} className={`material-symbols-outlined text-[12px] opacity-80 mt-0.5 group-hover:opacity-100 transition-all ${extraClass}`} title={logItem.sentimientos} style={{ fontVariationSettings: "'FILL' 1" }}>
+                                                    {dynamicIcon}
+                                                </span>
+                                            );
+                                        })
+                                    )}
+                                </div>
                             </div>
 
                             <div className="z-10 mt-2 w-full">
@@ -338,6 +408,62 @@ export default function CalendarView() {
                                     })()}
                                 </div>
                             </div>
+
+                            {/* Detalle avanzado Garmin/Strava Múltiples */}
+                            {dayLogsData.map((log) => {
+                                const mExtra = log.metricas_extra;
+                                if (!mExtra || !mExtra.strava_id) return null;
+
+                                return (
+                                    <div key={log.id} className="bg-[#FC4C02]/10 border border-[#FC4C02]/20 p-4 rounded-xl mb-4 relative overflow-hidden">
+                                        <div className="absolute -right-4 -top-4 opacity-5">
+                                            <span className="material-symbols-outlined text-8xl text-[#FC4C02]">sync</span>
+                                        </div>
+                                        <div className="flex justify-between items-center mb-3">
+                                            <h4 className="font-['Space_Grotesk'] text-[10px] text-[#FC4C02] uppercase font-bold tracking-widest flex items-center gap-1.5">
+                                                <span className="material-symbols-outlined text-sm">watch</span>
+                                                {mExtra.type || 'Telemetría Dinámica'}
+                                            </h4>
+
+                                            {/* Show small stats override if multiple */}
+                                            <div className="text-right">
+                                                <span className="font-['Inter'] font-black text-white text-xs mr-2">{log.distancia_real_km} km</span>
+                                                <span className="font-['Inter'] font-black text-white text-xs">{log.duracion_real_mins} min</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-3 relative z-10">
+                                            {mExtra.average_heartrate && (
+                                                <div>
+                                                    <span className="block text-[9px] font-bold tracking-widest text-zinc-500 uppercase">HR Media</span>
+                                                    <span className="font-['Inter'] font-black text-white text-lg">{Math.round(mExtra.average_heartrate)} <span className="text-[10px] font-normal">BPM</span></span>
+                                                </div>
+                                            )}
+                                            {mExtra.total_elevation_gain !== undefined && (
+                                                <div>
+                                                    <span className="block text-[9px] font-bold tracking-widest text-zinc-500 uppercase">Desnivel</span>
+                                                    <span className="font-['Inter'] font-black text-white text-lg">+{mExtra.total_elevation_gain} <span className="text-[10px] font-normal">M</span></span>
+                                                </div>
+                                            )}
+                                            {mExtra.average_speed && (
+                                                <div>
+                                                    <span className="block text-[9px] font-bold tracking-widest text-zinc-500 uppercase">Ritmo Medio</span>
+                                                    <span className="font-['Inter'] font-black text-white text-lg">
+                                                        {Math.floor(1000 / mExtra.average_speed / 60)}:
+                                                        {Math.round((1000 / mExtra.average_speed) % 60).toString().padStart(2, '0')} <span className="text-[10px] font-normal">/KM</span>
+                                                    </span>
+                                                </div>
+                                            )}
+                                            {mExtra.suffer_score && (
+                                                <div>
+                                                    <span className="block text-[9px] font-bold tracking-widest text-zinc-500 uppercase">Suffer Score</span>
+                                                    <span className="font-['Inter'] font-black text-[#FC4C02] text-lg">{mExtra.suffer_score}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
 
                             {/* Editor Formulario */}
                             <form onSubmit={handleSaveLog} className="space-y-4">
