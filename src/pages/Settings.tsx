@@ -337,6 +337,18 @@ export default function Settings() {
                 >
                     {isUpdating ? 'Actualizando Sistema...' : 'Aplicar Biometría'}
                 </button>
+
+                <button
+                    type="button"
+                    onClick={() => {
+                        localStorage.removeItem('antigravity_auth');
+                        window.location.href = '/';
+                    }}
+                    className="w-full bg-red-500/10 text-red-500 border border-red-500/20 py-4 rounded-lg font-['Inter'] font-bold text-sm uppercase tracking-widest hover:bg-red-500/20 active:scale-[0.98] transition-all mt-4 flex items-center justify-center gap-2"
+                >
+                    Cerrar Sesión / Bloquear
+                    <span className="material-symbols-outlined text-sm">lock</span>
+                </button>
             </form>
         </div>
     );

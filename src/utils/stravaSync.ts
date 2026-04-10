@@ -1,6 +1,6 @@
 import { supabase } from '../supabaseClient';
 
-export const syncStravaActivities = async (accessToken: string, atletaId: string) => {
+export const syncStravaActivities = async (accessToken: string, atletaId: string, athleteWeightKg = 75) => {
     try {
         // Fetch last 15 days of activities
         const afterTimestamp = Math.floor((Date.now() - 15 * 24 * 60 * 60 * 1000) / 1000);
@@ -53,6 +53,28 @@ export const syncStravaActivities = async (accessToken: string, atletaId: string
                     else estimatedRpe = 9;
                 }
 
+                // Optional calculation for steps based on cadence
+                let steps = 0;
+                if (activity.average_cadence) {
+                    // Cadence is typically single leg RPM in strava, total SP = RPM * 2
+                    steps = Math.round(activity.average_cadence * 2 * (activity.moving_time / 60));
+                }
+
+                // Calculate Calories Fallback if missing
+                let calories = activity.calories || activity.kilojoules;
+                if (!calories) {
+                    if (activity.type === 'Run' || activity.type === 'TrailRun' || activity.type === 'VirtualRun') {
+                        calories = athleteWeightKg * distanceKm * 1.036;
+                    } else if (activity.type === 'Walk') {
+                        calories = athleteWeightKg * distanceKm * 0.73;
+                    } else if (activity.type === 'WeightTraining' || activity.type === 'Crossfit') {
+                        // ~6 kcal per minute for strength training
+                        calories = durationMins * 6;
+                    } else {
+                        calories = durationMins * 5; // Generic fallback
+                    }
+                }
+
                 const payload = {
                     atleta_id: atletaId,
                     fecha_completada: targetDate.toISOString(),
@@ -67,7 +89,9 @@ export const syncStravaActivities = async (accessToken: string, atletaId: string
                         total_elevation_gain: activity.total_elevation_gain,
                         average_speed: activity.average_speed,
                         suffer_score: activity.suffer_score,
-                        type: activity.type
+                        type: activity.type,
+                        calories: Math.round(calories),
+                        steps: steps > 0 ? steps : undefined
                     }
                 };
 

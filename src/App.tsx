@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import TopAppBar from './components/TopAppBar';
 import BottomNavBar from './components/BottomNavBar';
@@ -8,6 +9,7 @@ import CalendarView from './pages/CalendarView';
 import Settings from './pages/Settings';
 import CoachChat from './pages/CoachChat';
 import StravaCallback from './pages/StravaCallback';
+import Login from './pages/Login';
 
 function AppLayout() {
   return (
@@ -30,6 +32,20 @@ function AppLayout() {
 }
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+
+  useEffect(() => {
+    // Check local storage on mount
+    const authStatus = localStorage.getItem('antigravity_auth');
+    if (authStatus === 'true') {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  if (!isAuthenticated) {
+    return <Login onLogin={() => setIsAuthenticated(true)} />;
+  }
+
   return (
     <BrowserRouter>
       <AppLayout />

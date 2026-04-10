@@ -19,9 +19,18 @@ No es solo un rastreador pasivo de estadísticas; incluye un **Entrenador Analí
 
 * **🧠 Agente Cognitivo de IA (Entrenador "Aurelio")**
   * **Motor:** Desarrollado con el SDK `@google/generative-ai` apuntando a **Gemini 2.5 Flash** para latencia en tiempo real.
+  * **Analítica Diaria Rápida:** Evalúa tus registros de entrenamiento de los últimos 7 días con un sistema de caché en el dispositivo para emitir juicios sin gastar cuota de API en cada recarga.
   * **Memoria Persistente:** Carga automática del contexto desde Supabase para conservar una memoria histórica de todas tus excusas, fatigas y sensaciones.
   * **Inyección de Biometría:** El agente conoce todos los datos de tu Perfil de Atleta actual y tu cumplimiento exacto de la base de datos al momento de iniciar la conversación.
-  * **Ejecución Autónoma (Tool Calling):** Si el atleta le reporta haber completado un entreno vía chat, la IA detectará las intenciones, mapeará los parámetros (distancia, duración, RPE, fecha) e **insertará de manera autónoma los registros en el calendario de entrenamiento de Supabase**, reduciendo la fricción manual de formularios a cero.
+  * **Ejecución Autónoma (Tool Calling):** Si el atleta le reporta haber completado un entreno vía chat, la IA detectará las intenciones, mapeará los parámetros e **insertará de manera autónoma los registros en el calendario de entrenamiento**, reduciendo la fricción manual a cero.
+
+* **⚙️ Sistema de Autenticación Híbrida**
+  * Acceso de entrada principal al Dashboard protegido bajo pantalla de seguridad, ideal para alojar publicamente en internet.
+  * Sistema de cierre de sesión integrado en el panel de control.
+
+* **🚴‍♂️ Integración Strava & Telemetría Extendida**
+  * Sincronización transparente de Actividades de Strava hacia la base de datos local.
+  * Motor de respaldo matemático para recuperar automáticamente **Calorías** consumidas basándose en perfil biométrico, y extraer **Pasos y Cadencia** directa del reloj (Garmin/Strava).
 
 ## 🛠️ Stack Tecnológico
 

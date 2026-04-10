@@ -1,5 +1,11 @@
+import { useState, useEffect } from 'react';
 import { useAthlete } from '../context/AthleteContext';
 import { getPhaseForDate, getDailyFocus, getMacrocycleProgress, getPhaseProgress, getWeeklyProgress } from '../utils/trainingLogic';
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
+import { supabase } from '../supabaseClient';
+import WeightFeedback from '../components/WeightFeedback';
+import DashboardStats from '../components/DashboardStats';
+import DashboardAIEvaluation from '../components/DashboardAIEvaluation';
 
 export default function Dashboard() {
     const { weight, targetWeight, complianceScore, weeklyComplianceScore } = useAthlete();
@@ -23,6 +29,79 @@ export default function Dashboard() {
     // Dynamic Countdown
     const raceDate = new Date(2026, 11, 6).getTime(); // Dec 6, 2026
     const daysToGo = Math.max(0, Math.floor((raceDate - dTime) / (1000 * 60 * 60 * 24)));
+
+    // Weight Tracking Logic
+    const [weightLogs, setWeightLogs] = useState<any[]>([]);
+    const [newWeightInput, setNewWeightInput] = useState('');
+    const [isSavingWeight, setIsSavingWeight] = useState(false);
+
+    const [editingLogId, setEditingLogId] = useState<string | null>(null);
+    const [editingWeightValue, setEditingWeightValue] = useState<string>('');
+
+    useEffect(() => {
+        const fetchWeightLogs = async () => {
+            const { data } = await supabase
+                .from('registros_peso')
+                .select('id, fecha, peso_kg')
+                .order('fecha', { ascending: true })
+                .limit(14); // Last 14 weigh-ins
+
+            if (data) {
+                // Format for recharts
+                const formatted = data.map(d => ({
+                    id: d.id,
+                    dateStr: new Date(d.fecha).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+                    weight: d.peso_kg
+                }));
+                setWeightLogs(formatted);
+            }
+        };
+        fetchWeightLogs();
+    }, []);
+
+    const handleSaveWeight = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const kg = parseFloat(newWeightInput);
+        if (isNaN(kg) || kg <= 0) return;
+
+        setIsSavingWeight(true);
+        try {
+            const { data: profile } = await supabase.from('perfil_atleta').select('id').limit(1).maybeSingle();
+            if (profile) {
+                await supabase.from('registros_peso').insert([{
+                    atleta_id: profile.id,
+                    fecha: new Date().toISOString().split('T')[0],
+                    peso_kg: kg
+                }]);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+        setIsSavingWeight(false);
+        setNewWeightInput('');
+        window.location.reload(); // Quick refresh to see new graph data
+    };
+
+    const handleEditStart = (log: any) => {
+        setEditingLogId(log.id);
+        setEditingWeightValue(log.weight.toString());
+    };
+
+    const handleEditSave = async (id: string) => {
+        const kg = parseFloat(editingWeightValue);
+        if (isNaN(kg) || kg <= 0) return;
+
+        await supabase.from('registros_peso').update({ peso_kg: kg }).eq('id', id);
+        setEditingLogId(null);
+        window.location.reload();
+    };
+
+    const handleDelete = async (id: string) => {
+        if (window.confirm('¿Borrar este registro?')) {
+            await supabase.from('registros_peso').delete().eq('id', id);
+            window.location.reload();
+        }
+    };
 
     return (
         <div className="px-6 mt-8 max-w-4xl mx-auto space-y-10">
@@ -56,6 +135,9 @@ export default function Dashboard() {
                 </div>
             </section>
 
+            {/* AI Daily Check */}
+            <DashboardAIEvaluation />
+
             {/* Hybrid Status Bento */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Status Indicator Card */}
@@ -79,24 +161,8 @@ export default function Dashboard() {
                     </p>
                 </div>
 
-                {/* Weekly Mileage Gauge */}
-                <div className="bg-surface-container-low rounded-xl p-6">
-                    <div className="flex justify-between items-start mb-6">
-                        <span className="font-['Space_Grotesk'] text-[10px] uppercase font-bold tracking-widest text-zinc-500">Weekly Volume</span>
-                        <span className={`font-['Space_Grotesk'] ${isInactive ? 'text-zinc-500' : 'text-primary'} font-bold text-xs`}>{isInactive ? '0%' : '82%'}</span>
-                    </div>
-                    <div className="flex items-baseline gap-2 mb-4">
-                        <h2 className={`font-['Inter'] font-black text-5xl tracking-tighter ${isInactive ? 'text-zinc-600' : ''}`}>{isInactive ? '0.0' : '42.4'}</h2>
-                        <span className="font-['Space_Grotesk'] text-sm text-zinc-500">KM</span>
-                    </div>
-                    <div className="gauge-track w-full mb-2 bg-surface-container-high rounded-full overflow-hidden h-2">
-                        <div className={`gauge-indicator ${isInactive ? 'w-0' : 'w-[82%] bg-primary'} h-full rounded-full`}></div>
-                    </div>
-                    <div className="flex justify-between font-['Space_Grotesk'] text-[10px] uppercase tracking-widest text-zinc-500">
-                        <span>{phase.name}</span>
-                        <span>{isInactive ? "Target: 0KM" : "Target: Pending"}</span>
-                    </div>
-                </div>
+                {/* Aggregation Stats Widget */}
+                <DashboardStats />
             </div>
 
             {/* Weight Tracking Chart Card */}
@@ -118,30 +184,120 @@ export default function Dashboard() {
                         </div>
                     </div>
                 </div>
-                {/* Technical Mock Chart */}
-                <div className="h-32 w-full relative flex items-end gap-1">
-                    <div className="flex-1 bg-surface-container-high h-[40%] rounded-sm opacity-20"></div>
-                    <div className="flex-1 bg-surface-container-high h-[45%] rounded-sm opacity-20"></div>
-                    <div className="flex-1 bg-surface-container-high h-[42%] rounded-sm opacity-30"></div>
-                    <div className="flex-1 bg-surface-container-high h-[50%] rounded-sm opacity-40"></div>
-                    <div className="flex-1 bg-surface-container-high h-[55%] rounded-sm opacity-50"></div>
-                    <div className="flex-1 bg-surface-container-high h-[52%] rounded-sm opacity-60"></div>
-                    <div className="flex-1 bg-primary h-[60%] rounded-sm ambient-glow"></div>
-                    {/* Line Overlay Logic */}
-                    <svg className="absolute inset-0 h-full w-full pointer-events-none" preserveAspectRatio="none">
-                        <polyline className="opacity-100" fill="none" points="0,90 40,85 80,88 120,70 160,65 200,68 240,55 280,50 320,48 360,52 400,45" stroke="#ff915d" strokeWidth="2"></polyline>
-                    </svg>
+
+                {/* Weight Registration Form */}
+                <form onSubmit={handleSaveWeight} className="mb-6 flex gap-2">
+                    <input
+                        type="number"
+                        step="0.1"
+                        placeholder="Nuevo pesaje (kg)"
+                        value={newWeightInput}
+                        onChange={e => setNewWeightInput(e.target.value)}
+                        className="bg-surface-container-highest border border-white/5 rounded-lg px-3 py-2 text-sm font-['Inter'] w-32 focus:ring-1 focus:ring-primary focus:outline-none"
+                    />
+                    <button
+                        type="submit"
+                        disabled={!newWeightInput || isSavingWeight}
+                        className="bg-primary/20 text-primary border border-primary/30 hover:bg-primary/30 px-3 py-2 rounded-lg font-['Space_Grotesk'] text-[10px] uppercase font-bold tracking-widest whitespace-nowrap transition-colors"
+                    >
+                        {isSavingWeight ? 'Guardando...' : 'Registrar'}
+                    </button>
+                </form>
+
+                {/* Recharts Chart */}
+                <div className="h-40 w-full relative -ml-4 mt-4">
+                    {weightLogs.length > 0 ? (
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={weightLogs} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+                                <defs>
+                                    <linearGradient id="colorWeight" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#ff915d" stopOpacity={0.4} />
+                                        <stop offset="95%" stopColor="#ff915d" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <XAxis
+                                    dataKey="dateStr"
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fill: '#71717a', fontSize: 10, fontFamily: 'Space Grotesk' }}
+                                    dy={10}
+                                />
+                                <YAxis
+                                    domain={['dataMin - 1', 'dataMax + 1']}
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fill: '#71717a', fontSize: 10, fontFamily: 'Space Grotesk' }}
+                                />
+                                <Tooltip
+                                    contentStyle={{ backgroundColor: '#18181b', border: 'none', borderRadius: '8px', fontSize: '12px' }}
+                                    itemStyle={{ color: '#ff915d', fontWeight: 'bold' }}
+                                />
+                                <Area
+                                    type="monotone"
+                                    dataKey="weight"
+                                    stroke="#ff915d"
+                                    strokeWidth={3}
+                                    fillOpacity={1}
+                                    fill="url(#colorWeight)"
+                                />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center border border-dashed border-white/10 rounded-xl">
+                            <span className="font-['Space_Grotesk'] text-xs text-zinc-500 uppercase tracking-widest">Sin registros recientes</span>
+                        </div>
+                    )}
                 </div>
-                <div className="flex justify-between mt-4 font-['Space_Grotesk'] text-[9px] uppercase tracking-widest">
-                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((dayStr, idx) => {
-                        const dayIndexForDate = idx === 6 ? 0 : idx + 1; // Map 0-6 (Mon-Sun) to 0-6 (Sun-Sat Date.getDay())
-                        const isToday = todayDate.getDay() === dayIndexForDate;
-                        return (
-                            <span key={dayStr} className={isToday ? "text-primary font-bold" : "text-zinc-600"}>
-                                {dayStr}
-                            </span>
-                        );
-                    })}
+
+                <WeightFeedback weightLogs={weightLogs} />
+
+                {/* Recent Logs List for Edits */}
+                <div className="mt-6 border-t border-white/5 pt-4">
+                    <span className="font-['Space_Grotesk'] text-[10px] uppercase font-bold tracking-widest text-zinc-500 mb-3 block">Últimos registros</span>
+                    <div className="space-y-2">
+                        {weightLogs.slice().reverse().slice(0, 3).map((log) => (
+                            <div key={log.id} className="flex items-center justify-between bg-surface-container-highest px-3 py-2 rounded-lg">
+                                {editingLogId === log.id ? (
+                                    <div className="flex items-center gap-2 w-full">
+                                        <span className="text-xs font-['Space_Grotesk'] text-zinc-500 w-12">{log.dateStr}</span>
+                                        <input
+                                            type="number"
+                                            step="0.1"
+                                            value={editingWeightValue}
+                                            onChange={(e) => setEditingWeightValue(e.target.value)}
+                                            className="bg-black/20 border border-white/10 rounded px-2 py-1 text-sm font-['Inter'] w-20 focus:outline-none focus:border-primary"
+                                        />
+                                        <div className="flex gap-1 ml-auto">
+                                            <button onClick={() => setEditingLogId(null)} className="p-1 hover:bg-white/5 rounded text-zinc-400 transition-colors">
+                                                <span className="material-symbols-outlined text-[14px]">close</span>
+                                            </button>
+                                            <button onClick={() => handleEditSave(log.id)} className="p-1 hover:bg-primary/20 rounded text-primary transition-colors">
+                                                <span className="material-symbols-outlined text-[14px]">check</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-xs font-['Space_Grotesk'] text-zinc-500 w-12">{log.dateStr}</span>
+                                            <span className="font-['Inter'] font-bold text-sm tracking-tight">{log.weight} kg</span>
+                                        </div>
+                                        <div className="flex items-center gap-1 opacity-60 hover:opacity-100 transition-opacity">
+                                            <button onClick={() => handleEditStart(log)} className="p-1.5 hover:bg-white/5 rounded-md text-zinc-400 transition-colors">
+                                                <span className="material-symbols-outlined text-[14px]">edit</span>
+                                            </button>
+                                            <button onClick={() => handleDelete(log.id)} className="p-1.5 hover:bg-red-500/10 rounded-md text-red-400 transition-colors">
+                                                <span className="material-symbols-outlined text-[14px]">delete</span>
+                                            </button>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        ))}
+                        {weightLogs.length === 0 && (
+                            <div className="text-xs text-zinc-600 font-['Inter'] italic">No hay registros para mostrar.</div>
+                        )}
+                    </div>
                 </div>
             </section>
 

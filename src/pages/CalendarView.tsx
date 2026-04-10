@@ -5,7 +5,7 @@ import { useAthlete } from '../context/AthleteContext';
 import { syncStravaActivities } from '../utils/stravaSync';
 
 export default function CalendarView() {
-    const { hrZones, stravaTokens } = useAthlete();
+    const { hrZones, stravaTokens, weight } = useAthlete();
     const today = new Date();
     const [isSyncingStrava, setIsSyncingStrava] = useState(false);
 
@@ -158,7 +158,7 @@ export default function CalendarView() {
         try {
             const { data } = await supabase.from('perfil_atleta').select('id').limit(1).single();
             if (data?.id) {
-                const result = await syncStravaActivities(stravaTokens.accessToken, data.id);
+                const result = await syncStravaActivities(stravaTokens.accessToken, data.id, weight);
                 if (result.success) {
                     alert(`✅ Sincronización completada. Actividades nuevas/actualizadas: ${result.count}`);
                     window.location.reload();
@@ -432,7 +432,7 @@ export default function CalendarView() {
                                             </div>
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-3 relative z-10">
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 relative z-10">
                                             {mExtra.average_heartrate && (
                                                 <div>
                                                     <span className="block text-[9px] font-bold tracking-widest text-zinc-500 uppercase">HR Media</span>
@@ -458,6 +458,18 @@ export default function CalendarView() {
                                                 <div>
                                                     <span className="block text-[9px] font-bold tracking-widest text-zinc-500 uppercase">Suffer Score</span>
                                                     <span className="font-['Inter'] font-black text-[#FC4C02] text-lg">{mExtra.suffer_score}</span>
+                                                </div>
+                                            )}
+                                            {mExtra.calories !== undefined && (
+                                                <div>
+                                                    <span className="block text-[9px] font-bold tracking-widest text-zinc-500 uppercase">Calorías</span>
+                                                    <span className="font-['Inter'] font-black text-white text-lg">{Math.round(mExtra.calories)} <span className="text-[10px] font-normal">KCAL</span></span>
+                                                </div>
+                                            )}
+                                            {mExtra.steps !== undefined && (
+                                                <div>
+                                                    <span className="block text-[9px] font-bold tracking-widest text-zinc-500 uppercase">Pasos est.</span>
+                                                    <span className="font-['Inter'] font-black text-white text-lg">{mExtra.steps.toLocaleString()}</span>
                                                 </div>
                                             )}
                                         </div>
