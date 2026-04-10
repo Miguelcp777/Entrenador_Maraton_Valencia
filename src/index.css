@@ -1,0 +1,121 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #0e0e11;
+  --color-tertiary-fixed: #f7ad1e;
+  --color-surface-variant: #25252a;
+  --color-error-dim: #d7383b;
+  --color-surface-container-high: #1f1f23;
+  --color-on-primary-container: #411400;
+  --color-on-secondary-fixed: #562700;
+  --color-tertiary-container: #f7ad1e;
+  --color-on-primary-fixed: #000000;
+  --color-surface: #0e0e11;
+  --color-on-error: #490006;
+  --color-on-primary-fixed-variant: #511b00;
+  --color-on-tertiary: #5a3c00;
+  --color-on-secondary: #4a2100;
+  --color-on-primary: #541d00;
+  --color-primary-dim: #ff742d;
+  --color-primary: #ff915d;
+  --color-surface-tint: #ff915d;
+  --color-surface-container-low: #131316;
+  --color-on-surface: #fbf8fc;
+  --color-on-tertiary-fixed-variant: #5a3b00;
+  --color-on-secondary-fixed-variant: #813e00;
+  --color-on-error-container: #ffa8a3;
+  --color-secondary: #fc8f3c;
+  --color-surface-container-lowest: #000000;
+  --color-error-container: #9f0519;
+  --color-on-secondary-container: #fff6f2;
+  --color-tertiary: #ffbe50;
+  --color-outline-variant: #48474b;
+  --color-surface-dim: #0e0e11;
+  --color-tertiary-dim: #e7a006;
+  --color-tertiary-fixed-dim: #e7a006;
+  --color-outline: #767578;
+  --color-on-surface-variant: #acaaae;
+  --color-inverse-on-surface: #555458;
+  --color-secondary-fixed-dim: #ffb380;
+  --color-secondary-dim: #ec8230;
+  --color-surface-bright: #2c2c30;
+  --color-secondary-fixed: #ffc6a2;
+  --color-inverse-surface: #fbf8fc;
+  --color-secondary-container: #964900;
+  --color-on-tertiary-fixed: #321f00;
+  --color-inverse-primary: #a43f00;
+  --color-on-tertiary-container: #4e3300;
+  --color-primary-fixed-dim: #f96400;
+  --color-on-background: #fbf8fc;
+  --color-surface-container: #19191d;
+  --color-error: #ff716c;
+  --color-primary-container: #ff7936;
+  --color-surface-container-highest: #25252a;
+  --color-primary-fixed: #ff7936;
+
+  --font-headline: "Inter", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-label: "Space Grotesk", sans-serif;
+  
+  --radius-DEFAULT: 0.125rem;
+  --radius-lg: 0.25rem;
+  --radius-xl: 0.5rem;
+  --radius-full: 0.75rem;
+}
+
+@layer base {
+  body { 
+    background-color: var(--color-background); 
+    color: var(--color-on-surface); 
+    font-family: var(--font-body); 
+    min-height: max(884px, 100dvh);
+  }
+}
+
+@layer utilities {
+  .material-symbols-outlined { 
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; 
+  }
+  .kinetic-gradient { 
+    background: linear-gradient(135deg, var(--color-primary) 0%, #ff7936 100%); 
+  }
+  .ambient-glow { 
+    box-shadow: 0 0 40px rgba(255, 145, 93, 0.12); 
+  }
+  .gauge-track { 
+    background: var(--color-surface-variant); 
+    height: 4px; 
+    border-radius: 2px; 
+    position: relative; 
+    overflow: hidden; 
+  }
+  .gauge-indicator { 
+    background: var(--color-primary); 
+    height: 100%; 
+    position: absolute; 
+    left: 0; 
+    top: 0; 
+    box-shadow: 0 0 8px var(--color-primary); 
+  }
+  .glass-panel {
+    backdrop-filter: blur(20px);
+    background: rgba(37, 37, 42, 0.7);
+  }
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.rpe-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  background: var(--color-primary);
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 0 15px rgba(255, 145, 93, 0.4);
+}
