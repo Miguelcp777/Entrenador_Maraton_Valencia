@@ -190,10 +190,10 @@ export default function CalendarView() {
                         <button
                             onClick={handleSyncStrava}
                             disabled={isSyncingStrava}
-                            className="sm:hidden bg-orange-500/10 text-[#FC4C02] border border-[#FC4C02]/30 px-3 py-1.5 rounded-md font-['Space_Grotesk'] text-[10px] uppercase font-bold tracking-widest flex items-center gap-1.5 transition-all"
+                            className="sm:hidden bg-orange-500/10 text-[#FC4C02] border border-[#FC4C02]/30 px-2 py-1.5 rounded-md font-['Space_Grotesk'] text-[9px] uppercase font-bold tracking-widest flex items-center gap-1 transition-all"
                         >
-                            <span className={`material-symbols-outlined text-[14px] ${isSyncingStrava ? 'animate-spin' : ''}`}>sync</span>
-                            {isSyncingStrava ? 'SYNC' : 'SYNC'}
+                            <span className={`material-symbols-outlined text-[12px] ${isSyncingStrava ? 'animate-spin' : ''}`}>sync</span>
+                            {isSyncingStrava ? 'SYNCING...' : 'SYNC STRAVA'}
                         </button>
                     )}
                 </div>
