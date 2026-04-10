@@ -223,7 +223,7 @@ Tus respuestas deben ser concisas, al punto, llenas de determinación técnica y
     }
 
     return (
-        <div className="px-4 pt-4 flex flex-col overflow-hidden" style={{ height: 'calc(100vh - 7rem)' }}>
+        <div className="flex flex-col flex-1 min-h-0 px-4 pt-4 pb-24">
             <header className="mb-6 flex-shrink-0">
                 <div className="flex justify-between items-end mb-2">
                     <h1 className="font-['Inter'] font-black text-4xl uppercase tracking-tighter leading-none">AI COACH</h1>
