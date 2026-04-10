@@ -68,10 +68,16 @@ It's not just a passive stat tracker; it includes an **AI Analytical Coach** pow
    npm install
    ```
 
-4. Configure your environment variables in the `src/supabaseClient.ts` file or through the internal UI panel for the Gemini key:
-   * **Supabase URL**
-   * **Supabase Anon Key**
-   * Paste your Gemini API key inside the hidden **Settings** tab in the app.
+4. Configure your environment variables in the `.env` file at the root of the project:
+
+   ```env
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   VITE_STRAVA_CLIENT_ID=your_strava_api_client_id
+   VITE_STRAVA_CLIENT_SECRET=your_strava_api_client_secret
+   ```
+
+   *(Note: The Gemini API key is configured dynamically through the hidden **Settings** tab within the App).*
 
 5. Boot up the hot-reload development server:
 
