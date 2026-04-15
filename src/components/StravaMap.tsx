@@ -3,7 +3,7 @@ import 'leaflet/dist/leaflet.css';
 import { useEffect } from 'react';
 import L from 'leaflet';
 
-// Fix for default marker icons in Leaflet with React
+// Fix for default marker icons
 // @ts-ignore
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -12,7 +12,6 @@ L.Icon.Default.mergeOptions({
     shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-// Helper to decode Strava polyline
 function decodePolyline(encoded: string): [number, number][] {
     let points: [number, number][] = [];
     let index = 0, len = encoded.length;
@@ -44,7 +43,8 @@ function ChangeView({ bounds }: { bounds: L.LatLngBoundsExpression }) {
     const map = useMap();
     useEffect(() => {
         if (bounds) {
-            map.fitBounds(bounds, { padding: [30, 30] });
+            map.invalidateSize();
+            map.fitBounds(bounds, { padding: [40, 40] });
         }
     }, [bounds, map]);
     return null;
@@ -66,71 +66,98 @@ export default function StravaMap({ polyline, distance, date, pace }: StravaMapP
     const bounds = L.latLngBounds(positions.map(p => L.latLng(p[0], p[1])));
     const startPos = positions[0];
 
-    // Custom Start Marker
+    // High contrast start/finish icon
     const startIcon = L.divIcon({
         className: 'custom-div-icon',
-        html: `<div style="background-color: #FC4C02; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 10px rgba(252, 76, 2, 0.5);"></div>`,
-        iconSize: [12, 12],
-        iconAnchor: [6, 6]
+        html: `<div style="background-color: #FC4C02; width: 14px; height: 14px; border-radius: 50%; border: 2.5px solid white; box-shadow: 0 0 15px rgba(252, 76, 2, 0.8);"></div>`,
+        iconSize: [14, 14],
+        iconAnchor: [7, 7]
     });
 
     return (
-        <div className="w-full rounded-xl overflow-hidden border border-white/5 shadow-2xl bg-surface-container-low my-4 flex flex-col">
-            {/* Header style from Photo 2 */}
-            <div className="bg-[#2a2a2e] px-4 py-2 border-b border-white/5 flex items-center justify-between">
-                <span className="font-['Space_Grotesk'] text-[10px] uppercase font-bold tracking-widest text-[#acaaae]">
-                    MY ROUTE & MAP
-                </span>
-                <div className="w-1.5 h-1.5 rounded-full bg-[#FC4C02] animate-pulse"></div>
+        <div className="w-full rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-surface-container-low my-4 flex flex-col group animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {/* Optimized Header */}
+            <div className="bg-[#1c1c1f] px-5 py-3 border-b border-white/10 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[#FC4C02] text-xs">explore</span>
+                    <span className="font-['Space_Grotesk'] text-[11px] uppercase font-bold tracking-[0.15em] text-zinc-300">
+                        MY ROUTE & MAP
+                    </span>
+                </div>
+                <div className="flex gap-1">
+                    <div className="w-1 h-1 rounded-full bg-primary/40"></div>
+                    <div className="w-1 h-1 rounded-full bg-primary/60 animate-pulse"></div>
+                </div>
             </div>
 
-            <div className="relative h-56 w-full z-0 group">
+            <div className="relative h-64 w-full z-0">
+                <style dangerouslySetInnerHTML={{ __html: `
+                    /* Advanced CSS Filter for "High-Contrast Premium Dark" using Voyager tiles */
+                    .premium-dark-tiles {
+                        filter: invert(100%) hue-rotate(180deg) brightness(0.9) contrast(1.1) saturate(0.9) !important;
+                    }
+                    .leaflet-container {
+                        background: #111113 !important;
+                    }
+                    .leaflet-tile {
+                        /* Prevent brief flashes of light tiles */
+                        background-color: #111113 !important;
+                    }
+                `}} />
+                
                 <MapContainer
                     bounds={bounds}
                     zoomControl={false}
                     attributionControl={false}
-                    className="w-full h-full bg-[#1e1e21]"
+                    className="w-full h-full"
                     dragging={true}
+                    touchZoom={true}
                     scrollWheelZoom={false}
-                    doubleClickZoom={false}
                 >
+                    {/* We use Voyager (Light) + CSS Inversion for high contrast labels */}
                     <TileLayer
-                        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                        url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                        className="premium-dark-tiles"
                     />
                     <Polyline
                         positions={positions}
-                        pathOptions={{ color: '#FC4C02', weight: 4, opacity: 0.9, lineJoin: 'round' }}
+                        pathOptions={{ color: '#FC4C02', weight: 5, opacity: 1, lineCap: 'round', lineJoin: 'round' }}
                     />
                     <Marker position={startPos} icon={startIcon} />
                     <ChangeView bounds={bounds} />
                 </MapContainer>
 
-                {/* Overlays like Photo 2 */}
+                {/* Overlays */}
                 
-                {/* Top Right: Start/Finish Tag */}
-                <div className="absolute top-3 right-3 z-10">
-                    <div className="bg-[#1e1e21]/90 backdrop-blur-md border border-white/10 rounded-full px-3 py-1 flex items-center gap-1.5 shadow-lg">
-                         <span className="material-symbols-outlined text-[10px] text-[#FC4C02]" style={{ fontVariationSettings: "'FILL' 1" }}>location_on</span>
-                         <span className="font-['Space_Grotesk'] text-[9px] font-bold uppercase tracking-widest text-white">START/FINISH</span>
+                {/* Status Badge */}
+                <div className="absolute top-4 right-4 z-[1000]">
+                    <div className="bg-black/80 backdrop-blur-xl border border-white/20 rounded-xl px-4 py-1.5 flex items-center gap-2 shadow-2xl">
+                         <span className="material-symbols-outlined text-[14px] text-[#FC4C02]" style={{ fontVariationSettings: "'FILL' 1" }}>location_on</span>
+                         <span className="font-['Space_Grotesk'] text-[10px] font-black uppercase tracking-widest text-white">START/FINISH</span>
                     </div>
                 </div>
 
-                {/* Bottom Left: Info Overlay */}
-                <div className="absolute bottom-3 left-3 z-10">
-                    <div className="bg-[#1e1e21]/80 backdrop-blur-xl border border-white/10 rounded-lg px-3 py-2 shadow-xl">
-                        <div className="flex flex-col gap-0.5">
-                            <span className="font-['Inter'] font-black text-xs text-white">
-                                {distance}km <span className="text-zinc-400 font-normal">({date})</span>
-                            </span>
-                            <span className="font-['Space_Grotesk'] text-[9px] text-[#FC4C02] font-bold uppercase tracking-wider">
-                                Avg Pace {pace} /km
-                            </span>
+                {/* Data HUD Overlay */}
+                <div className="absolute bottom-4 left-4 z-[1000]">
+                    <div className="bg-black/70 backdrop-blur-2xl border border-white/10 rounded-2xl px-5 py-3 shadow-2xl transform transition-transform group-hover:scale-105 duration-300">
+                        <div className="flex flex-col gap-1">
+                            <h5 className="font-['Inter'] font-black text-sm text-white flex items-center gap-2">
+                                {distance} km 
+                                <span className="h-1 w-1 rounded-full bg-zinc-600"></span>
+                                <span className="text-zinc-400 font-medium text-[10px] uppercase font-['Space_Grotesk']">{date}</span>
+                            </h5>
+                            <div className="flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-full bg-[#FC4C02]"></span>
+                                <span className="font-['Space_Grotesk'] text-[11px] text-[#FC4C02] font-black uppercase tracking-widest">
+                                    {pace} /km AVG
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Subtle Gradient Overlay */}
-                <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+                {/* Vignette effect for depth */}
+                <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_80px_rgba(0,0,0,0.4)]"></div>
             </div>
         </div>
     );
