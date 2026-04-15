@@ -102,10 +102,12 @@ export default function StravaMap({ polyline, distance, date, pace }: StravaMapP
                     zoomControl={false}
                     attributionControl={false}
                     className="w-full h-full"
-                    dragging={true}
-                    touchZoom={true}
+                    dragging={false}
+                    touchZoom={false}
                     scrollWheelZoom={false}
+                    doubleClickZoom={false}
                 >
+
                     {/* Base Layer: ESRI World Dark Gray Base */}
                     <TileLayer
                         url="https://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"
