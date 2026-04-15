@@ -117,9 +117,9 @@ export default function Today() {
                                 placeholder="00.0"
                                 value={distance}
                                 onChange={(e) => setDistance(e.target.value)}
-                                className="w-full bg-surface-container-lowest border-none text-on-surface font-['Inter'] font-black text-6xl py-4 px-0 placeholder:text-surface-container-highest focus:ring-0"
+                                className="w-full bg-surface-container-lowest border-none text-on-surface font-['Inter'] font-black text-4xl py-2 px-0 placeholder:text-surface-container-highest focus:ring-0"
                             />
-                            <div className="absolute right-0 bottom-6 font-['Inter'] font-bold text-xl text-surface-container-highest">KM</div>
+                            <div className="absolute right-0 bottom-3 font-['Inter'] font-bold text-xs text-surface-container-highest uppercase tracking-tighter">KM</div>
                         </div>
                         <div className="flex-1 relative border-b-2 border-transparent focus-within:border-primary/30 transition-all">
                             <label className="block font-['Space_Grotesk'] text-xs uppercase font-bold tracking-widest text-outline group-focus-within:text-primary transition-colors mb-2">Time</label>
@@ -129,10 +129,11 @@ export default function Today() {
                                 placeholder="00"
                                 value={duration}
                                 onChange={(e) => setDuration(e.target.value)}
-                                className="w-full bg-surface-container-lowest border-none text-on-surface font-['Inter'] font-black text-6xl py-4 px-0 placeholder:text-surface-container-highest focus:ring-0"
+                                className="w-full bg-surface-container-lowest border-none text-on-surface font-['Inter'] font-black text-4xl py-2 px-0 placeholder:text-surface-container-highest focus:ring-0"
                             />
-                            <div className="absolute right-0 bottom-6 font-['Inter'] font-bold text-xl text-surface-container-highest">MINS</div>
+                            <div className="absolute right-0 bottom-3 font-['Inter'] font-bold text-xs text-surface-container-highest uppercase tracking-tighter">MINS</div>
                         </div>
+
                     </div>
                 </div>
 
