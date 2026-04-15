@@ -127,29 +127,12 @@ export default function StravaMap({ polyline, distance, date, pace }: StravaMapP
 
                 {/* Overlays */}
                 <div className="absolute top-4 right-4 z-[1000]">
-                    <div className="bg-black/90 backdrop-blur-xl border border-[#FC4C02]/30 rounded-full px-4 py-1.5 flex items-center gap-2 shadow-2xl shadow-[#FC4C02]/10">
-                         <span className="material-symbols-outlined text-[14px] text-[#FC4C02]" style={{ fontVariationSettings: "'FILL' 1" }}>location_on</span>
-                         <span className="font-['Space_Grotesk'] text-[10px] font-black uppercase tracking-widest text-white">START/FINISH</span>
+                    <div className="bg-black/80 backdrop-blur-xl border border-white/10 rounded-full px-3 py-1 flex items-center gap-2 shadow-xl">
+                         <span className="material-symbols-outlined text-[12px] text-[#FC4C02]" style={{ fontVariationSettings: "'FILL' 1" }}>location_on</span>
+                         <span className="font-['Space_Grotesk'] text-[9px] font-bold uppercase tracking-widest text-white">START/FINISH</span>
                     </div>
                 </div>
 
-                <div className="absolute bottom-4 left-4 z-[1000]">
-                    <div className="bg-black/80 backdrop-blur-2xl border border-white/10 rounded-2xl px-5 py-3 shadow-2xl">
-                        <div className="flex flex-col gap-1">
-                            <h5 className="font-['Inter'] font-black text-sm text-white flex items-center gap-2">
-                                {distance} km 
-                                <span className="h-1 w-1 rounded-full bg-[#FC4C02]"></span>
-                                <span className="text-zinc-300 font-medium text-[10px] uppercase font-['Space_Grotesk']">{date}</span>
-                            </h5>
-                            <div className="flex items-center gap-1.5 opacity-90">
-                                <span className="w-1.5 h-1.5 rounded-full bg-[#FC4C02]"></span>
-                                <span className="font-['Space_Grotesk'] text-[11px] text-[#FC4C02] font-black uppercase tracking-widest">
-                                    {pace} /km AVG
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                 {/* Subtle depth effect */}
                 <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-black/10 via-transparent to-black/30"></div>
