@@ -443,41 +443,42 @@ export default function CalendarView() {
                                         <div className="absolute -right-4 -top-4 opacity-5">
                                             <span className="material-symbols-outlined text-8xl text-[#FC4C02]">sync</span>
                                         </div>
-                                        <div className="flex justify-between items-center mb-3">
+                                        
+                                        <div className="flex justify-between items-center mb-4">
                                             <h4 className="font-['Space_Grotesk'] text-[10px] text-[#FC4C02] uppercase font-bold tracking-widest flex items-center gap-1.5">
                                                 <span className="material-symbols-outlined text-sm">watch</span>
                                                 {mExtra.type || 'Telemetría Dinámica'}
                                             </h4>
 
-                                            {/* MAPA DINÁMICO RADIADO AL ESTILO VALENCIA (PHOTO 2) */}
-                                            {mExtra.map_polyline && (() => {
-                                                const actDate = new Date(log.fecha_completada);
-                                                const dateStr = actDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                                                
-                                                let paceStr = '--:--';
-                                                if (mExtra.average_speed) {
-                                                    const mins = Math.floor(1000 / mExtra.average_speed / 60);
-                                                    const secs = Math.round((1000 / mExtra.average_speed) % 60).toString().padStart(2, '0');
-                                                    paceStr = `${mins}:${secs}`;
-                                                }
+                                            <div className="text-right">
+                                                <span className="font-['Inter'] font-black text-white text-xs mr-2">{log.distancia_real_km} km</span>
+                                                <span className="font-['Inter'] font-black text-white text-xs">{log.duracion_real_mins} min</span>
+                                            </div>
+                                        </div>
 
-                                                return (
+                                        {/* MAPA DINÁMICO RADIADO AL ESTILO VALENCIA (PHOTO 2) */}
+                                        {mExtra.map_polyline && (() => {
+                                            const actDate = new Date(log.fecha_completada);
+                                            const dateStr = actDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                                            
+                                            let paceStr = '--:--';
+                                            if (mExtra.average_speed) {
+                                                const mins = Math.floor(1000 / mExtra.average_speed / 60);
+                                                const secs = Math.round((1000 / mExtra.average_speed) % 60).toString().padStart(2, '0');
+                                                paceStr = `${mins}:${secs}`;
+                                            }
+
+                                            return (
+                                                <div className="mb-4">
                                                     <StravaMap 
                                                         polyline={mExtra.map_polyline} 
                                                         distance={log.distancia_real_km}
                                                         date={dateStr}
                                                         pace={paceStr}
                                                     />
-                                                );
-                                            })()}
-
-
-                                            {/* Show small stats override if multiple */}
-                                            <div className="text-right">
-                                                <span className="font-['Inter'] font-black text-white text-xs mr-2">{log.distancia_real_km} km</span>
-                                                <span className="font-['Inter'] font-black text-white text-xs">{log.duracion_real_mins} min</span>
-                                            </div>
-                                        </div>
+                                                </div>
+                                            );
+                                        })()}
 
                                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 relative z-10">
                                             {mExtra.average_heartrate && (
