@@ -449,10 +449,27 @@ export default function CalendarView() {
                                                 {mExtra.type || 'Telemetría Dinámica'}
                                             </h4>
 
-                                            {/* MAPA DINÁMICO RADIADO */}
-                                            {mExtra.map_polyline && (
-                                                <StravaMap polyline={mExtra.map_polyline} />
-                                            )}
+                                            {/* MAPA DINÁMICO RADIADO AL ESTILO VALENCIA (PHOTO 2) */}
+                                            {mExtra.map_polyline && (() => {
+                                                const actDate = new Date(log.fecha_completada);
+                                                const dateStr = actDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                                                
+                                                let paceStr = '--:--';
+                                                if (mExtra.average_speed) {
+                                                    const mins = Math.floor(1000 / mExtra.average_speed / 60);
+                                                    const secs = Math.round((1000 / mExtra.average_speed) % 60).toString().padStart(2, '0');
+                                                    paceStr = `${mins}:${secs}`;
+                                                }
+
+                                                return (
+                                                    <StravaMap 
+                                                        polyline={mExtra.map_polyline} 
+                                                        distance={log.distancia_real_km}
+                                                        date={dateStr}
+                                                        pace={paceStr}
+                                                    />
+                                                );
+                                            })()}
 
 
                                             {/* Show small stats override if multiple */}
