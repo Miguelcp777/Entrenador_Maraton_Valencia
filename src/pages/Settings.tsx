@@ -296,7 +296,7 @@ export default function Settings() {
                         </span>
                     )}
                     <p className="font-['Space_Grotesk'] text-[10px] text-zinc-400 leading-relaxed">
-                        Requerida para activar el Coach de IA. Almacenada estrictamente en LocalStorage. Si se borra caché, deberás introducirla de nuevo.
+                        Requerida para activar el Coach de IA. Almacenada en la nube (Supabase) vinculado a tu perfil para persistir entre dispositivos.
                     </p>
                 </div>
 

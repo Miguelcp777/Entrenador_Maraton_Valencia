@@ -63,8 +63,11 @@ export function AthleteProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         const fetchRemoteState = async () => {
-            const { data, error } = await supabase.from('perfil_atleta').select('*').limit(1).single();
+            const { data, error } = await supabase.from('perfil_atleta').select('*').limit(1).maybeSingle();
+
             if (data && !error) {
+                // Determine if we should update local state from DB
+                // We prioritize DB value if it exists, otherwise keep local
                 if (data.peso_actual) setWeight(data.peso_actual);
                 if (data.peso_objetivo) setTargetWeight(data.peso_objetivo);
                 if (data.nombre) setName(data.nombre);
@@ -72,15 +75,23 @@ export function AthleteProvider({ children }: { children: ReactNode }) {
                 if (data.altura) setHeight(data.altura);
                 if (data.fecha_nacimiento) setBirthDate(data.fecha_nacimiento);
                 if (data.fc_reposo) setRestingHR(data.fc_reposo);
-                // ✅ Persist Strava tokens from DB (survives cache clears)
+
+                // ✅ Strava persistence
                 if (data.strava_tokens) {
                     setStravaTokens(data.strava_tokens);
                     localStorage.setItem('strava_tokens', JSON.stringify(data.strava_tokens));
+                } else if (stravaTokens?.accessToken) {
+                    // Have local but not in DB? Sync it UP.
+                    supabase.from('perfil_atleta').update({ strava_tokens: stravaTokens }).eq('id', data.id);
                 }
-                // ✅ Persist Gemini API key from DB (survives cache clears)
+
+                // ✅ Gemini persistence
                 if (data.gemini_api_key) {
                     setGeminiApiKey(data.gemini_api_key);
                     localStorage.setItem('athlete_geminiApiKey', JSON.stringify(data.gemini_api_key));
+                } else if (geminiApiKey) {
+                    // Have local but not in DB? Sync it UP.
+                    supabase.from('perfil_atleta').update({ gemini_api_key: geminiApiKey }).eq('id', data.id);
                 }
             }
 
@@ -114,9 +125,7 @@ export function AthleteProvider({ children }: { children: ReactNode }) {
                 .gte('created_at', monday.toISOString());
 
             if (now > macroStart) {
-                // Determine how many days passed this week (Monday=1, Sunday=7)
                 const todayIndex = currentDay === 0 ? 7 : currentDay;
-                // Assuming training schedule is 6 sessions a week. If today is early in the week, expected is lower.
                 const expectedWeekly = Math.max(1, Math.floor(todayIndex * (6 / 7)));
                 const weeklyScore = Math.round(((weeklyLogsCount || 0) / expectedWeekly) * 100);
                 setWeeklyComplianceScore(Math.min(100, Math.max(0, weeklyScore)));
@@ -127,50 +136,34 @@ export function AthleteProvider({ children }: { children: ReactNode }) {
         fetchRemoteState();
     }, []);
 
-    useEffect(() => {
-        localStorage.setItem('athlete_weight', JSON.stringify(weight));
-    }, [weight]);
-
-    useEffect(() => {
-        localStorage.setItem('athlete_targetWeight', JSON.stringify(targetWeight));
-    }, [targetWeight]);
-
-    useEffect(() => {
-        localStorage.setItem('athlete_name', JSON.stringify(name));
-    }, [name]);
-
-    useEffect(() => {
-        localStorage.setItem('athlete_avatarUrl', JSON.stringify(avatarUrl));
-    }, [avatarUrl]);
-
-    useEffect(() => {
-        localStorage.setItem('athlete_height', JSON.stringify(height));
-    }, [height]);
-
-    useEffect(() => {
-        localStorage.setItem('athlete_birthDate', JSON.stringify(birthDate));
-    }, [birthDate]);
-
-    useEffect(() => {
-        localStorage.setItem('athlete_restingHR', JSON.stringify(restingHR));
-    }, [restingHR]);
+    // Sync state changes to local storage & DB
+    useEffect(() => { localStorage.setItem('athlete_weight', JSON.stringify(weight)); }, [weight]);
+    useEffect(() => { localStorage.setItem('athlete_targetWeight', JSON.stringify(targetWeight)); }, [targetWeight]);
+    useEffect(() => { localStorage.setItem('athlete_name', JSON.stringify(name)); }, [name]);
+    useEffect(() => { localStorage.setItem('athlete_avatarUrl', JSON.stringify(avatarUrl)); }, [avatarUrl]);
+    useEffect(() => { localStorage.setItem('athlete_height', JSON.stringify(height)); }, [height]);
+    useEffect(() => { localStorage.setItem('athlete_birthDate', JSON.stringify(birthDate)); }, [birthDate]);
+    useEffect(() => { localStorage.setItem('athlete_restingHR', JSON.stringify(restingHR)); }, [restingHR]);
 
     useEffect(() => {
         localStorage.setItem('athlete_geminiApiKey', JSON.stringify(geminiApiKey));
-        // Also persist to Supabase if the key is non-empty
         if (geminiApiKey) {
-            supabase.from('perfil_atleta').select('id').limit(1).single().then(({ data }) => {
-                if (data?.id) supabase.from('perfil_atleta').update({ gemini_api_key: geminiApiKey }).eq('id', data.id);
+            supabase.from('perfil_atleta').select('id, gemini_api_key').limit(1).maybeSingle().then(({ data }) => {
+                if (data?.id && data.gemini_api_key !== geminiApiKey) {
+                    supabase.from('perfil_atleta').update({ gemini_api_key: geminiApiKey }).eq('id', data.id).then();
+                }
             });
         }
     }, [geminiApiKey]);
 
     useEffect(() => {
         localStorage.setItem('strava_tokens', JSON.stringify(stravaTokens));
-        // Also persist to Supabase so tokens survive across browsers/devices
         if (stravaTokens?.accessToken) {
-            supabase.from('perfil_atleta').select('id').limit(1).single().then(({ data }) => {
-                if (data?.id) supabase.from('perfil_atleta').update({ strava_tokens: stravaTokens }).eq('id', data.id);
+            supabase.from('perfil_atleta').select('id, strava_tokens').limit(1).maybeSingle().then(({ data }) => {
+                const needsUpdate = data?.id && JSON.stringify(data.strava_tokens) !== JSON.stringify(stravaTokens);
+                if (needsUpdate) {
+                    supabase.from('perfil_atleta').update({ strava_tokens: stravaTokens }).eq('id', data.id).then();
+                }
             });
         }
     }, [stravaTokens]);

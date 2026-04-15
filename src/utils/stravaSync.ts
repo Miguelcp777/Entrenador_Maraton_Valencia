@@ -1,13 +1,60 @@
 import { supabase } from '../supabaseClient';
 
-export const syncStravaActivities = async (accessToken: string, atletaId: string, athleteWeightKg = 75) => {
+export const refreshStravaTokens = async (refreshToken: string) => {
     try {
+        const clientId = '223033';
+        const clientSecret = '6c9623a2953e6faa2d540e0ac3421f43f74bec8d';
+
+        const response = await fetch('https://www.strava.com/api/v3/oauth/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                client_id: clientId,
+                client_secret: clientSecret,
+                refresh_token: refreshToken,
+                grant_type: 'refresh_token'
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to refresh Strava token');
+        }
+
+        const data = await response.json();
+        return {
+            accessToken: data.access_token,
+            refreshToken: data.refresh_token,
+            expiresAt: data.expires_at
+        };
+    } catch (error) {
+        console.error("Error refreshing Strava token:", error);
+        throw error;
+    }
+};
+
+export const syncStravaActivities = async (
+    tokens: { accessToken: string; refreshToken: string; expiresAt: number },
+    atletaId: string,
+    athleteWeightKg = 75
+) => {
+    let currentAccessToken = tokens.accessToken;
+    let updatedTokens = null;
+
+    try {
+        // 1. Check if token is expired (or about to expire in 5 mins)
+        const now = Math.floor(Date.now() / 1000);
+        if (tokens.expiresAt < now + 300) {
+            console.log("Strava token expired, refreshing...");
+            updatedTokens = await refreshStravaTokens(tokens.refreshToken);
+            currentAccessToken = updatedTokens.accessToken;
+        }
+
         // Fetch last 15 days of activities
         const afterTimestamp = Math.floor((Date.now() - 15 * 24 * 60 * 60 * 1000) / 1000);
 
         const response = await fetch(`https://www.strava.com/api/v3/athlete/activities?after=${afterTimestamp}&per_page=30`, {
             headers: {
-                Authorization: `Bearer ${accessToken}`
+                Authorization: `Bearer ${currentAccessToken}`
             }
         });
 
@@ -42,8 +89,6 @@ export const syncStravaActivities = async (accessToken: string, atletaId: string
                 const durationMins = Math.round(activity.moving_time / 60);
 
                 // RPE estimation based on Strava suffer_score or heart rate 
-                // Strava suffer_score typically ranges from 10 to 200+
-                // We'll fallback to a neutral 5 if we don't have enough data
                 let estimatedRpe = 5;
                 if (activity.suffer_score) {
                     if (activity.suffer_score < 40) estimatedRpe = 4;
@@ -56,7 +101,6 @@ export const syncStravaActivities = async (accessToken: string, atletaId: string
                 // Optional calculation for steps based on cadence
                 let steps = 0;
                 if (activity.average_cadence) {
-                    // Cadence is typically single leg RPM in strava, total SP = RPM * 2
                     steps = Math.round(activity.average_cadence * 2 * (activity.moving_time / 60));
                 }
 
@@ -68,7 +112,6 @@ export const syncStravaActivities = async (accessToken: string, atletaId: string
                     } else if (activity.type === 'Walk') {
                         calories = athleteWeightKg * distanceKm * 0.73;
                     } else if (activity.type === 'WeightTraining' || activity.type === 'Crossfit') {
-                        // ~6 kcal per minute for strength training
                         calories = durationMins * 6;
                     } else {
                         calories = durationMins * 5; // Generic fallback
@@ -104,21 +147,19 @@ export const syncStravaActivities = async (accessToken: string, atletaId: string
                 const existingStravaLog = existingLogs?.find(e => e.metricas_extra?.strava_id === activity.id);
 
                 if (existingStravaLog) {
-                    // Update the matched strava activity
                     await supabase.from('logs_entrenamiento').update({
                         distancia_real_km: distanceKm,
                         duracion_real_mins: durationMins,
                         metricas_extra: payload.metricas_extra
                     }).eq('id', existingStravaLog.id);
                 } else {
-                    // It's a new strava activity! Insert it.
                     await supabase.from('logs_entrenamiento').insert([payload]);
                     syncedCount++;
                 }
             }
         }
 
-        return { success: true, count: syncedCount };
+        return { success: true, count: syncedCount, updatedTokens };
 
     } catch (error: any) {
         console.error("Strava Sync Error:", error);

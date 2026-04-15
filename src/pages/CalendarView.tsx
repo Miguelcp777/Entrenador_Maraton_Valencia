@@ -158,8 +158,11 @@ export default function CalendarView() {
         try {
             const { data } = await supabase.from('perfil_atleta').select('id').limit(1).single();
             if (data?.id) {
-                const result = await syncStravaActivities(stravaTokens.accessToken, data.id, weight);
+                const result = await syncStravaActivities(stravaTokens, data.id, weight);
                 if (result.success) {
+                    if (result.updatedTokens) {
+                        setStravaTokens(result.updatedTokens);
+                    }
                     alert(`✅ Sincronización completada. Actividades nuevas/actualizadas: ${result.count}`);
                     window.location.reload();
                 } else {
