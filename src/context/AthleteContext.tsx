@@ -77,23 +77,24 @@ export function AthleteProvider({ children }: { children: ReactNode }) {
                 if (data.fc_reposo) setRestingHR(data.fc_reposo);
 
                 // ✅ Strava persistence
-                if (data.strava_tokens) {
+                if (data.strava_tokens && Object.keys(data.strava_tokens).length > 0) {
                     setStravaTokens(data.strava_tokens);
                     localStorage.setItem('strava_tokens', JSON.stringify(data.strava_tokens));
-                } else if (stravaTokens?.accessToken) {
-                    // Have local but not in DB? Sync it UP.
-                    supabase.from('perfil_atleta').update({ strava_tokens: stravaTokens }).eq('id', data.id);
+                } else if (stravaTokens && stravaTokens.accessToken) {
+                    // Sync local to DB
+                    await supabase.from('perfil_atleta').update({ strava_tokens: stravaTokens }).eq('id', data.id);
                 }
 
-                // ✅ Gemini persistence
-                if (data.gemini_api_key) {
+                // ✅ Gemini persistence (Enhanced protection)
+                if (data.gemini_api_key && data.gemini_api_key.trim().length > 5) {
                     setGeminiApiKey(data.gemini_api_key);
                     localStorage.setItem('athlete_geminiApiKey', JSON.stringify(data.gemini_api_key));
-                } else if (geminiApiKey) {
-                    // Have local but not in DB? Sync it UP.
-                    supabase.from('perfil_atleta').update({ gemini_api_key: geminiApiKey }).eq('id', data.id);
+                } else if (geminiApiKey && geminiApiKey.trim().length > 5) {
+                    // Sync local to DB if DB is empty but we have a key locally
+                    await supabase.from('perfil_atleta').update({ gemini_api_key: geminiApiKey }).eq('id', data.id);
                 }
             }
+
 
             // Calculate Compliance Score from logs
             const { count: logsCount } = await supabase
