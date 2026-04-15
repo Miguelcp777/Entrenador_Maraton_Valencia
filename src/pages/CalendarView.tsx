@@ -373,7 +373,8 @@ export default function CalendarView() {
                             className="absolute inset-0 bg-black/80 backdrop-blur-sm cursor-pointer"
                             onClick={() => setSelectedDate(null)}
                         ></div>
-                        <div className={`relative bg-surface-container-low border-t-4 ${phase.border.replace('border-', 'border-t-').replace('/30', '').replace('/50', '')} w-full max-w-sm rounded-2xl p-6 shadow-2xl animate-in fade-in zoom-in duration-200`}>
+                        <div className={`relative bg-surface-container-low border-t-4 ${phase.border.replace('border-', 'border-t-').replace('/30', '').replace('/50', '')} w-full max-w-sm rounded-2xl p-6 shadow-2xl animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto`}>
+
                             <div className="flex justify-between items-start mb-6">
                                 <div>
                                     <span className={`font-['Space_Grotesk'] text-[10px] uppercase font-bold tracking-widest ${phase.color}`}>
