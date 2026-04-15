@@ -134,7 +134,8 @@ export const syncStravaActivities = async (
                         suffer_score: activity.suffer_score,
                         type: activity.type,
                         calories: Math.round(calories),
-                        steps: steps > 0 ? steps : undefined
+                        steps: steps > 0 ? steps : undefined,
+                        map_polyline: activity.map?.summary_polyline
                     }
                 };
 

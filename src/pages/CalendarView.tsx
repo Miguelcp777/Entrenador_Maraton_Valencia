@@ -3,6 +3,8 @@ import { supabase } from '../supabaseClient';
 import { getPhaseForDate, getDailyFocus, getTrainingDetails } from '../utils/trainingLogic';
 import { useAthlete } from '../context/AthleteContext';
 import { syncStravaActivities } from '../utils/stravaSync';
+import StravaMap from '../components/StravaMap';
+
 
 export default function CalendarView() {
     const { hrZones, stravaTokens, weight } = useAthlete();
@@ -446,6 +448,12 @@ export default function CalendarView() {
                                                 <span className="material-symbols-outlined text-sm">watch</span>
                                                 {mExtra.type || 'Telemetría Dinámica'}
                                             </h4>
+
+                                            {/* MAPA DINÁMICO RADIADO */}
+                                            {mExtra.map_polyline && (
+                                                <StravaMap polyline={mExtra.map_polyline} />
+                                            )}
+
 
                                             {/* Show small stats override if multiple */}
                                             <div className="text-right">
