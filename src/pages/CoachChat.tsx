@@ -50,7 +50,7 @@ export default function CoachChat() {
                     dbChatHistory = data;
                 }
 
-                const systemInstruction = `Eres "La Voz de Valencia", un Elite Hybrid Performance Coach preparándolo para la Maratón de Valencia 2026 (Valencia 2026 Protocol).
+                const systemInstruction = `Eres "Aurelio", un Elite Hybrid Performance Coach preparándolo para la Maratón de Valencia 2026 (Valencia 2026 Protocol).
 PERFIL PSICOLÓGICO: Eres una mezcla entre un científico del deporte de alto rendimiento y un mentor veterano. Tu tono es Directo y Profesional (no usas frases motivacionales de taza de café; motivas con progreso real), Empático pero Firme (entiendes que un atleta pesado sufre más impacto, pero no aceptas excusas por falta de disciplina en nutrición o sueño), Analítico (tu motivación siempre nace de un dato).
 LÓGICA DE COMUNICACIÓN (MOTIVACIÓN ADAPTATIVA):
 1. Cuando el atleta cumple: Refuerza el hábito. Ejemplo: "Construir el motor para Valencia se hace en estos días grises."
@@ -93,11 +93,11 @@ Tus respuestas deben ser concisas, al punto, llenas de determinación técnica y
                 // Build history array
                 const geminiHistory: any[] = [
                     { role: 'user', parts: [{ text: 'Hola Coach. Empieza la sesión.' }] },
-                    { role: 'model', parts: [{ text: `Aquí La Voz de Valencia. Fuerza para sostener el impacto, corazón para sostener el ritmo, ${name}. Tienes un ${complianceScore}% de cumplimiento. Háblame de tus métricas, sensaciones o evolución de peso.` }] }
+                    { role: 'model', parts: [{ text: `Aquí Aurelio. Fuerza para sostener el impacto, corazón para sostener el ritmo, ${name}. Tienes un ${complianceScore}% de cumplimiento. Háblame de tus métricas, sensaciones o evolución de peso.` }] }
                 ];
 
                 const uiMessages: { role: string, text: string }[] = [
-                    { role: 'model', text: `Aquí La Voz de Valencia. Fuerza para sostener el impacto, corazón para sostener el ritmo, ${name}. Tienes un ${complianceScore}% de cumplimiento. Háblame de tus métricas, sensaciones o evolución de peso.` }
+                    { role: 'model', text: `Aquí Aurelio. Fuerza para sostener el impacto, corazón para sostener el ritmo, ${name}. Tienes un ${complianceScore}% de cumplimiento. Háblame de tus métricas, sensaciones o evolución de peso.` }
                 ];
 
                 if (dbChatHistory && dbChatHistory.length > 0) {
@@ -282,7 +282,7 @@ Tus respuestas deben ser concisas, al punto, llenas de determinación técnica y
                             {msg.role === 'model' && (
                                 <div className="flex items-center gap-2 mb-2 text-primary">
                                     <span className="material-symbols-outlined text-[12px]">smart_toy</span>
-                                    <span className="font-['Space_Grotesk'] text-[10px] uppercase font-bold tracking-widest">La Voz de Valencia</span>
+                                    <span className="font-['Space_Grotesk'] text-[10px] uppercase font-bold tracking-widest">Aurelio</span>
                                 </div>
                             )}
                             <p className="font-['Inter'] font-medium text-sm leading-relaxed whitespace-pre-wrap">{msg.text}</p>

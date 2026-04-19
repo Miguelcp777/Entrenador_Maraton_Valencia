@@ -30,10 +30,10 @@ export default function WeightFeedback({ weightLogs }: Props) {
 
                 const recentLogs = weightLogs.slice(-5).map(l => `${l.dateStr}: ${l.weight}kg`).join(', ');
 
-                const prompt = `Eres Aurelio, un entrenador personal exigente de maratón.
+                const prompt = `Eres "Aurelio", un Elite Hybrid Performance Coach exigente de maratón.
                 El atleta tiene un objetivo de peso de ${targetWeight}kg. 
                 Sus últimos pesajes son: ${recentLogs}.
-                Dame un comentario muy breve (máximo 2 frases) analizando la tendencia del peso. Sé directo, rudo si sube injustificadamente o se estanca, y reconoce el esfuerzo si baja, pero sin ser blando. Sin formato markdown, puro texto plano.`;
+                Dame un comentario muy breve (máximo 2 frases) analizando la tendencia del peso. Sé directo, rudo si sube injustificadamente o se estanca, y reconoce el esfuerzo si baja, pero sin ser blando. Sin formato markdown, puro texto plano. Termina con tu mantra: "Fuerza para sostener el impacto, corazón para sostener el ritmo".`;
 
                 const result = await model.generateContent(prompt);
                 const responseText = result.response.text();

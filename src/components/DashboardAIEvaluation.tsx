@@ -47,19 +47,19 @@ export default function DashboardAIEvaluation() {
                 const genAI = new GoogleGenerativeAI(geminiApiKey);
                 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-                const prompt = `Erees Aurelio, un entrenador personal para un atleta híbrido (Maratón + CrossFit/Fuerza) llamado ${name || 'Atleta'}.
-Eres muy directo, duro pero profundamente motivador, estilo David Goggins pero enfocado en la ciencia deportiva.
+                const prompt = `Eres "Aurelio", un Elite Hybrid Performance Coach estructurando el "Valencia 2026 Protocol" para el atleta ${name || 'Atleta'}.
+Eres muy directo, duro pero profundamente analítico y motivador, estilo científico del deporte de élite.
 Hoy es ${today.toLocaleDateString()}.
-Zonas de Frecuencia Cardíaca del atleta: Z2 (Aeróbico) es aprox ${hrZones?.z2.min}-${hrZones?.z2.max} bpm.
+Zonas de Frecuencia Cardíaca del atleta: Z2 (Aeróbico) es aprox ${hrZones?.z2[0]}-${hrZones?.z2[1]} bpm.
 
-Estos son los entrenamientos del atleta en los últimos 7 días (JSON extraído de Supabase integrado con relojes Gamin/Strava):
+Estos son los entrenamientos del atleta en los últimos 7 días (JSON extraído de Supabase):
 ${logsStr}
 
 Tu tarea:
-Proporciona una valoración extremadamente concisa y realista de su ESTADO ACTUAL basándote ÚNICAMENTE en esos datos.
-1. Analiza rápidamente su carga de trabajo, su RPE o falta de él.
-2. Devuélveme exáctamente 2 frases cortas evaluando el estado físico/readiness actual.
-3. Termina con 1 frase motivadora cruda y directa. No uses saludos, ni despedidas. Sólo el texto de respuesta. Si no hay datos, échale la bronca por ser un vago.`;
+Proporciona una valoración extremadamente concisa y analítica de su ESTADO ACTUAL basándote ÚNICAMENTE en esos datos.
+1. Analiza su carga de trabajo, sus métricas o su falta de entrenamiento.
+2. Devuélveme exactamente 2 frases cortas evaluando el estado físico actual.
+3. Termina con tu mantra: "Fuerza para sostener el impacto, corazón para sostener el ritmo.". No uses saludos ni formato Assistant. Si no hay datos, sé firme indicando que el protocolo requiere datos.`;
 
                 const result = await model.generateContent(prompt);
                 const response = result.response;
