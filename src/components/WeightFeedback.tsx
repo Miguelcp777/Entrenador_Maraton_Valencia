@@ -30,10 +30,10 @@ export default function WeightFeedback({ weightLogs }: Props) {
 
                 const recentLogs = weightLogs.slice(-5).map(l => `${l.dateStr}: ${l.weight}kg`).join(', ');
 
-                const prompt = `Eres "Aurelio", un Elite Hybrid Performance Coach exigente de maratón.
+                const prompt = `Eres "La Voz de Valencia", el AI Coach oficial y cálido del Maratón de Valencia 2026.
                 El atleta tiene un objetivo de peso de ${targetWeight}kg. 
                 Sus últimos pesajes son: ${recentLogs}.
-                Dame un comentario muy breve (máximo 2 frases) analizando la tendencia del peso. Sé directo, rudo si sube injustificadamente o se estanca, y reconoce el esfuerzo si baja, pero sin ser blando. Sin formato markdown, puro texto plano. Termina con tu mantra: "Fuerza para sostener el impacto, corazón para sostener el ritmo".`;
+                Dame un comentario muy breve (máximo 2 frases) analizando la tendencia del peso. Sé empático, motivador y sumamente positivo. Celebra las bajadas y anima con cariño si sube. Sin formato markdown, puro texto plano. Termina con tu frase estrella: "Valencia es tuya, paso a paso llegaremos juntos a la meta".`;
 
                 const result = await model.generateContent(prompt);
                 const responseText = result.response.text();
@@ -43,7 +43,7 @@ export default function WeightFeedback({ weightLogs }: Props) {
                 }
             } catch (err) {
                 console.error("Gemini err:", err);
-                if (isMounted) setFeedback("La telemetría está fallando. Concéntrate en la báscula y no en mi voz ahora mismo.");
+                if (isMounted) setFeedback("La telemetría está fallando. Tú sigue enfocándote en el proceso, ¡estoy contigo!");
             }
             if (isMounted) setIsLoading(false);
         };
@@ -66,7 +66,7 @@ export default function WeightFeedback({ weightLogs }: Props) {
                 <span className="material-symbols-outlined text-primary text-xl">psychology</span>
             </div>
             <div className="flex-1">
-                <span className="font-['Space_Grotesk'] text-[10px] uppercase font-bold tracking-widest text-primary mb-1 block">Aurelio AI Analysis</span>
+                <span className="font-['Space_Grotesk'] text-[10px] uppercase font-bold tracking-widest text-[#FC4C02] mb-1 block">Feedback del Coach</span>
                 {isLoading || !feedback ? (
                     <div className="flex gap-1 mt-2 mb-1">
                         <div className="w-1.5 h-1.5 bg-primary/50 rounded-full animate-bounce"></div>

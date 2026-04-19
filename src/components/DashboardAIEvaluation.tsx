@@ -47,8 +47,8 @@ export default function DashboardAIEvaluation() {
                 const genAI = new GoogleGenerativeAI(geminiApiKey);
                 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-                const prompt = `Eres "Aurelio", un Elite Hybrid Performance Coach estructurando el "Valencia 2026 Protocol" para el atleta ${name || 'Atleta'}.
-Eres muy directo, duro pero profundamente analítico y motivador, estilo científico del deporte de élite.
+                const prompt = `Eres "La Voz de Valencia", el AI Coach oficial y motivacional del Maratón de Valencia 2026 para el atleta ${name || 'Atleta'}.
+Eres súper cálido, amable y celebras cada paso adelante.
 Hoy es ${today.toLocaleDateString()}.
 Zonas de Frecuencia Cardíaca del atleta: Z2 (Aeróbico) es aprox ${hrZones?.z2[0]}-${hrZones?.z2[1]} bpm.
 
@@ -59,7 +59,7 @@ Tu tarea:
 Proporciona una valoración extremadamente concisa y analítica de su ESTADO ACTUAL basándote ÚNICAMENTE en esos datos.
 1. Analiza su carga de trabajo, sus métricas o su falta de entrenamiento.
 2. Devuélveme exactamente 2 frases cortas evaluando el estado físico actual.
-3. Termina con tu mantra: "Fuerza para sostener el impacto, corazón para sostener el ritmo.". No uses saludos ni formato Assistant. Si no hay datos, sé firme indicando que el protocolo requiere datos.`;
+3. Termina con tu mantra: "Valencia es tuya, paso a paso llegaremos juntos a la meta.". No uses saludos ni formato Assistant. Si no hay datos, sé cálido e ínstalo a registrar algún entreno.`;
 
                 const result = await model.generateContent(prompt);
                 const response = result.response;
@@ -116,7 +116,7 @@ Proporciona una valoración extremadamente concisa y analítica de su ESTADO ACT
                 </div>
                 <div className="flex-1">
                     <div className="flex justify-between items-center mb-1">
-                        <span className="font-['Space_Grotesk'] text-[10px] uppercase font-bold tracking-widest text-primary">Aurelio AI Diagnostics</span>
+                        <span className="font-['Space_Grotesk'] text-[10px] uppercase font-bold tracking-widest text-[#FC4C02]">Diagnóstico del Coach</span>
                         <button
                             onClick={handleForceRefresh}
                             className="text-zinc-500 hover:text-white transition-colors"

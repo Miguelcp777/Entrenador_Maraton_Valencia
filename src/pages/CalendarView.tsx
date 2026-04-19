@@ -180,10 +180,10 @@ export default function CalendarView() {
                             if (recentLogs && recentLogs.length > 0) {
                                 const genAI = new GoogleGenerativeAI(geminiApiKey);
                                 
-                                const systemInstruction = `Eres "Aurelio", un Elite Hybrid Performance Coach estructurando el "Valencia 2026 Protocol". 
+                                const systemInstruction = `Eres "La Voz de Valencia", un Elite Hybrid Performance Coach estructurando el "Valencia 2026 Protocol". 
 El atleta ${name} (Peso: ${weight}kg) acaba de sincronizar Strava.
 Analiza su último entrenamiento comparado con los anteriores. Valora el progreso (ritmos, ppm, desnivel, suficiencia).
-REGLA CLAVE: Sé directo, breve (2-3 líneas máximo) y usa el tono duro pero analítico. No des consejos genéricos, basate en los datos. Termina con el mantra: "Fuerza para sostener el impacto, corazón para sostener el ritmo".`;
+REGLA CLAVE: Eres súper cálido, motivador y apoyas incondicionalmente al atleta. Sé muy empático (nada de dureza o "Aurelio"). Valora el esfuerzo y anímalo mucho usando referencias bonitas a la magia de Valencia. Termina siempre con un tono muy amable parecido a: "Valencia es tuya, paso a paso llegaremos juntos a la meta".`;
 
                                 const model = genAI.getGenerativeModel({ 
                                     model: "gemini-2.5-flash",
@@ -192,7 +192,7 @@ REGLA CLAVE: Sé directo, breve (2-3 líneas máximo) y usa el tono duro pero an
 
                                 const prompt = `Últimos entrenamientos (ordenados del más reciente al antiguo):\n` +
                                     recentLogs.map((l, i) => `[${i === 0 ? 'ÚLTIMO' : 'PREVIO'}] Fecha: ${new Date(l.fecha_completada).toLocaleDateString()}, Distancia: ${l.distancia_real_km}km, Duración: ${l.duracion_real_mins}min, HR Media: ${l.metricas_extra?.average_heartrate || 'N/A'}, Velocidad Media: ${l.metricas_extra?.average_speed ? (1000/l.metricas_extra.average_speed/60).toFixed(2) : 'N/A'} min/km, RPE: ${l.rpe_real}`).join('\n') +
-                                    `\n\nDame tu veredicto del último entrenamiento, compáralo con los previos y dime si estamos progresando.`;
+                                    `\n\nAnaliza su último entrenamiento basado en su RPE y métricas de Strava. Felicítalo por el esfuerzo extra si lo hay, o recomiéndale recuperar si está cargado. Sé extremadamente motivador e inspirador.`;
 
                                 const aiResult = await model.generateContent(prompt);
                                 
@@ -208,8 +208,11 @@ REGLA CLAVE: Sé directo, breve (2-3 líneas máximo) y usa el tono duro pero an
                                 setSyncFeedback(feedbackText);
                                 return; // Stop here, don't reload yet as we show modal
                             }
-                        } catch (err) {
+                        } catch (err: any) {
                             console.error("AI Feedback error:", err);
+                            alert(`✅ Sincronización completada (${result.count} actividades). ❌ IA Error: ${err.message || 'Fallo de conexión Gemini'}`);
+                            window.location.reload();
+                            return;
                         }
                     }
 
@@ -666,7 +669,7 @@ REGLA CLAVE: Sé directo, breve (2-3 líneas máximo) y usa el tono duro pero an
                             <span className="material-symbols-outlined text-4xl text-primary drop-shadow-[0_0_10px_rgba(255,102,0,0.8)]">psychology</span>
                             <div>
                                 <h3 className="font-['Inter'] font-black text-xl uppercase tracking-tighter text-white">Análisis de Strava</h3>
-                                <span className="font-['Space_Grotesk'] text-[10px] uppercase font-bold tracking-widest text-primary">Aurelio</span>
+                                <span className="font-['Space_Grotesk'] text-[10px] uppercase font-bold tracking-widest text-[#FC4C02]">La Voz de Valencia</span>
                             </div>
                         </div>
                         
