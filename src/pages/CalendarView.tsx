@@ -4,12 +4,14 @@ import { getPhaseForDate, getDailyFocus, getTrainingDetails } from '../utils/tra
 import { useAthlete } from '../context/AthleteContext';
 import { syncStravaActivities } from '../utils/stravaSync';
 import StravaMap from '../components/StravaMap';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 
 export default function CalendarView() {
-    const { hrZones, stravaTokens, weight } = useAthlete();
+    const { hrZones, stravaTokens, weight, geminiApiKey, name, targetWeight, height } = useAthlete();
     const today = new Date();
     const [isSyncingStrava, setIsSyncingStrava] = useState(false);
+    const [syncFeedback, setSyncFeedback] = useState<string | null>(null);
 
     // States for calendar navigation
     const [currentDate, setCurrentDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
@@ -165,6 +167,51 @@ export default function CalendarView() {
                     if (result.updatedTokens) {
                         setStravaTokens(result.updatedTokens);
                     }
+                    
+                    if (result.count > 0 && geminiApiKey) {
+                        try {
+                            // Fetch last 3 logs to compare
+                            const { data: recentLogs } = await supabase
+                                .from('logs_entrenamiento')
+                                .select('*')
+                                .order('fecha_completada', { ascending: false })
+                                .limit(3);
+                            
+                            if (recentLogs && recentLogs.length > 0) {
+                                const genAI = new GoogleGenerativeAI(geminiApiKey);
+                                const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+                                
+                                const systemInstruction = `Eres "La Voz de Valencia", un Elite Hybrid Performance Coach estructurando el "Valencia 2026 Protocol". 
+El atleta ${name} (Peso: ${weight}kg) acaba de sincronizar Strava.
+Analiza su último entrenamiento comparado con los anteriores. Valora el progreso (ritmos, ppm, desnivel, suficiencia).
+REGLA CLAVE: Sé directo, breve (2-3 líneas máximo) y usa el tono duro pero analítico. No des consejos genéricos, basate en los datos. Termina con el mantra: "Fuerza para sostener el impacto, corazón para sostener el ritmo".`;
+
+                                const prompt = `Últimos entrenamientos (ordenados del más reciente al antiguo):\n` +
+                                    recentLogs.map((l, i) => `[${i === 0 ? 'ÚLTIMO' : 'PREVIO'}] Fecha: ${new Date(l.fecha_completada).toLocaleDateString()}, Distancia: ${l.distancia_real_km}km, Duración: ${l.duracion_real_mins}min, HR Media: ${l.metricas_extra?.average_heartrate || 'N/A'}, Velocidad Media: ${l.metricas_extra?.average_speed ? (1000/l.metricas_extra.average_speed/60).toFixed(2) : 'N/A'} min/km, RPE: ${l.rpe_real}`).join('\n') +
+                                    `\n\nDame tu veredicto del último entrenamiento, compáralo con los previos y dime si estamos progresando.`;
+
+                                const aiResult = await model.generateContent({
+                                    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+                                    systemInstruction: { role: 'system', parts: [{ text: systemInstruction }] }
+                                });
+                                
+                                const feedbackText = aiResult.response.text();
+                                
+                                // Save to chat history
+                                await supabase.from('interacciones_chat').insert({
+                                    atleta_id: data.id,
+                                    contexto_fatiga: "He sincronizado mis nuevos entrenos de Strava.",
+                                    mensaje_coach: feedbackText
+                                });
+
+                                setSyncFeedback(feedbackText);
+                                return; // Stop here, don't reload yet as we show modal
+                            }
+                        } catch (err) {
+                            console.error("AI Feedback error:", err);
+                        }
+                    }
+
                     alert(`✅ Sincronización completada. Actividades nuevas/actualizadas: ${result.count}`);
                     window.location.reload();
                 } else {
@@ -608,6 +655,36 @@ export default function CalendarView() {
                     </div>
                 );
             })()}
+
+            {/* Sync AI Feedback Modal */}
+            {syncFeedback && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/90 backdrop-blur-md"></div>
+                    <div className="relative bg-surface-container-highest border border-primary/50 w-full max-w-md rounded-2xl p-6 shadow-2xl animate-in fade-in zoom-in duration-300">
+                        <div className="flex items-center gap-3 mb-4">
+                            <span className="material-symbols-outlined text-4xl text-primary drop-shadow-[0_0_10px_rgba(255,102,0,0.8)]">psychology</span>
+                            <div>
+                                <h3 className="font-['Inter'] font-black text-xl uppercase tracking-tighter text-white">Análisis de Strava</h3>
+                                <span className="font-['Space_Grotesk'] text-[10px] uppercase font-bold tracking-widest text-primary">La Voz de Valencia</span>
+                            </div>
+                        </div>
+                        
+                        <div className="bg-black/50 p-5 rounded-xl border-l-4 border-primary mb-6">
+                            <p className="font-['Inter'] text-sm leading-relaxed text-zinc-200 whitespace-pre-wrap">{syncFeedback}</p>
+                        </div>
+                        
+                        <button
+                            onClick={() => {
+                                setSyncFeedback(null);
+                                window.location.reload();
+                            }}
+                            className="w-full kinetic-gradient text-black py-4 rounded-xl font-['Inter'] font-black text-sm uppercase tracking-widest hover:brightness-110 transition-all shadow-[0_0_20px_rgba(255,102,0,0.3)]"
+                        >
+                            ENTENDIDO, COACH
+                        </button>
+                    </div>
+                </div>
+            )}
 
         </div>
     );

@@ -50,14 +50,19 @@ export default function CoachChat() {
                     dbChatHistory = data;
                 }
 
-                const systemInstruction = `Eres Aurelio, un entrenador personal exigente, directo e implacable. Tu objetivo es preparar al atleta para la Maratón de Valencia 2026 (Valencia 2026 Protocol). 
-No seas cursi ni complaciente. Sé agresivo y empuja siempre al límite, pero con conocimiento técnico biomecánico y de programación del entrenamiento real. No uses hashtags ni formato de asistente.
+                const systemInstruction = `Eres "La Voz de Valencia", un Elite Hybrid Performance Coach preparándolo para la Maratón de Valencia 2026 (Valencia 2026 Protocol).
+PERFIL PSICOLÓGICO: Eres una mezcla entre un científico del deporte de alto rendimiento y un mentor veterano. Tu tono es Directo y Profesional (no usas frases motivacionales de taza de café; motivas con progreso real), Empático pero Firme (entiendes que un atleta pesado sufre más impacto, pero no aceptas excusas por falta de disciplina en nutrición o sueño), Analítico (tu motivación siempre nace de un dato).
+LÓGICA DE COMUNICACIÓN (MOTIVACIÓN ADAPTATIVA):
+1. Cuando el atleta cumple: Refuerza el hábito. Ejemplo: "Construir el motor para Valencia se hace en estos días grises."
+2. Cuando reporta dolor/fatiga: Prioriza la longevidad. Ejemplo: "Escuchar al cuerpo es de atletas inteligentes. Ajustamos; el objetivo es llegar al 6 de diciembre."
+3. Cuando hay pérdida de peso: Destaca la física. Ejemplo: "Cada kilo que dejas atrás es un segundo menos por kilómetro en el cauce del Turia."
+MANTRA: "Fuerza para sostener el impacto, corazón para sostener el ritmo".
+REGLAS DE ORO: Nunca ignores dolor punzante. Si se salta entreno, no juzgues, recalibra. Usa terminología de Valencia (El Saler, cauce del Turia, Ciudad de las Artes).
 Datos del Atleta: Nombre: ${name}, Peso Actual: ${weight}kg, Peso Objetivo: ${targetWeight}kg, Altura: ${height}cm.
-Cumplimiento Actual del Plan: ${complianceScore}%. Muestra desprecio si el cumplimiento es bajo y orgullo rudo si es alto.
+Cumplimiento Actual del Plan: ${complianceScore}%.
 Zonas de Frecuencia Cardíaca (Karvonen): Z1: ${hrZones.z1[0]}-${hrZones.z1[1]}, Z2: ${hrZones.z2[0]}-${hrZones.z2[1]}, Z3: ${hrZones.z3[0]}-${hrZones.z3[1]}, Z4: ${hrZones.z4[0]}-${hrZones.z4[1]}, Z5: ${hrZones.z5[0]}-${hrZones.z5[1]}, MaxHR: ${hrZones.maxHR}.
 Últimos entrenamientos completados en BD: ${logsContext}.
-Si el RPE acumulado en los logs es consistentemente muy alto (ej. múltiples días > 8), o menciona dolores articulares, MÁNDALE AL DESCANSO. 
-Tus respuestas deben ser concisas, al punto, llenas de determinación técnica y psicológicamente duras.`;
+Tus respuestas deben ser concisas, al punto, llenas de determinación técnica y analítica. No uses formato de asistente IA.`;
 
                 const genAI = new GoogleGenerativeAI(geminiApiKey);
                 // Usando Gemini 2.5 Flash por velocidad
@@ -88,11 +93,11 @@ Tus respuestas deben ser concisas, al punto, llenas de determinación técnica y
                 // Build history array
                 const geminiHistory: any[] = [
                     { role: 'user', parts: [{ text: 'Hola Coach. Empieza la sesión.' }] },
-                    { role: 'model', parts: [{ text: `¡ROMPAMOS ESTO, ${name.toUpperCase()}! Estás en un ${complianceScore}% de cumplimiento. ¿A qué estás esperando? ¡Háblame de tu entreno, de tus números o de tus excusas!` }] }
+                    { role: 'model', parts: [{ text: `Aquí La Voz de Valencia. Fuerza para sostener el impacto, corazón para sostener el ritmo, ${name}. Tienes un ${complianceScore}% de cumplimiento. Háblame de tus métricas, sensaciones o evolución de peso.` }] }
                 ];
 
                 const uiMessages: { role: string, text: string }[] = [
-                    { role: 'model', text: `¡ROMPAMOS ESTO, ${name.toUpperCase()}! Estás en un ${complianceScore}% de cumplimiento. ¿A qué estás esperando? ¡Háblame de tu entreno, de tus números o de tus excusas!` }
+                    { role: 'model', text: `Aquí La Voz de Valencia. Fuerza para sostener el impacto, corazón para sostener el ritmo, ${name}. Tienes un ${complianceScore}% de cumplimiento. Háblame de tus métricas, sensaciones o evolución de peso.` }
                 ];
 
                 if (dbChatHistory && dbChatHistory.length > 0) {
@@ -277,7 +282,7 @@ Tus respuestas deben ser concisas, al punto, llenas de determinación técnica y
                             {msg.role === 'model' && (
                                 <div className="flex items-center gap-2 mb-2 text-primary">
                                     <span className="material-symbols-outlined text-[12px]">smart_toy</span>
-                                    <span className="font-['Space_Grotesk'] text-[10px] uppercase font-bold tracking-widest">Aurelio</span>
+                                    <span className="font-['Space_Grotesk'] text-[10px] uppercase font-bold tracking-widest">La Voz de Valencia</span>
                                 </div>
                             )}
                             <p className="font-['Inter'] font-medium text-sm leading-relaxed whitespace-pre-wrap">{msg.text}</p>
