@@ -168,7 +168,7 @@ export default function CalendarView() {
                         setStravaTokens(result.updatedTokens);
                     }
                     
-                    if (result.count > 0 && geminiApiKey) {
+                    if (geminiApiKey) {
                         try {
                             // Fetch last 3 logs to compare
                             const { data: recentLogs } = await supabase
