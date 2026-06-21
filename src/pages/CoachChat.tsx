@@ -3,6 +3,8 @@ import { useAthlete } from '../context/AthleteContext';
 import { supabase } from '../supabaseClient';
 import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
 import { Link } from 'react-router-dom';
+import { getWeekData, getSessionForDate } from '../utils/trainingLogic';
+import { PHASES, RACE_GOAL } from '../data/marathonPlan';
 
 export default function CoachChat() {
     const { name, weight, targetWeight, height, hrZones, complianceScore, geminiApiKey } = useAthlete();
@@ -50,7 +52,17 @@ export default function CoachChat() {
                     dbChatHistory = data;
                 }
 
+                // Contexto del plan real para hoy
+                const hoy = new Date();
+                const semana = getWeekData(hoy);
+                const sesionHoy = getSessionForDate(hoy);
+                const planContext = semana
+                    ? `SEMANA ${semana.n}/24 · Fase ${PHASES[semana.phase].label} · Foco: ${semana.focus}. Tirada larga de la semana: ${semana.longRun} km. Sesión de HOY: ${sesionHoy ? `${sesionHoy.session.title} — ${sesionHoy.session.detail}` : 'Descanso'}.`
+                    : 'El plan de 24 semanas aún no ha comenzado (arranca el 22 jun 2026) o ya ha finalizado.';
+
                 const systemInstruction = `Eres "La Voz de Valencia", el AI Coach oficial del Maratón de Valencia 2026.
+OBJETIVO DEL ATLETA: terminar en ${RACE_GOAL.finishTime} (ritmo maratón ${RACE_GOAL.marathonPace}) y bajar ${RACE_GOAL.weightLossKg} kg (~${RACE_GOAL.weeklyLossKg} kg/sem). El 80% de los km van en Z2: si no puede hablar, debe frenar.
+CONTEXTO DEL PLAN HOY: ${planContext}
 PERFIL PSICOLÓGICO: Eres un entrenador enormemente positivo, empático, motivador y profesional. Tu objetivo principal es animar al atleta, celebrar sus progresos, por mínimos que sean, y brindarle apoyo incondicional utilizando ciencia deportiva. NO ERES DURO NI EXIGENTE DE FORMA NEGATIVA. Tienes un tono cálido, cercano y apasionado por el running y por la ciudad de Valencia.
 LÓGICA DE COMUNICACIÓN:
 1. Cuando el atleta cumple: Celebra efusivamente. Eres su mayor fan.
@@ -60,7 +72,7 @@ MANTRA: "Valencia es tuya, paso a paso llegaremos juntos a la meta".
 REGLAS DE ORO: Nunca juzgues ni regañes. Apoya siempre. Usa referencias icónicas de Valencia de forma hermosa (la Ciudad de las Artes brillando, la brisa del Mediterráneo, la magia de correr por el Turia).
 Datos del Atleta: Nombre: ${name}, Peso Actual: ${weight}kg, Peso Objetivo: ${targetWeight}kg, Altura: ${height}cm.
 Cumplimiento Actual del Plan: ${complianceScore}%.
-Zonas de Frecuencia Cardíaca (Karvonen): Z1: ${hrZones.z1[0]}-${hrZones.z1[1]}, Z2: ${hrZones.z2[0]}-${hrZones.z2[1]}, Z3: ${hrZones.z3[0]}-${hrZones.z3[1]}, Z4: ${hrZones.z4[0]}-${hrZones.z4[1]}, Z5: ${hrZones.z5[0]}-${hrZones.z5[1]}, MaxHR: ${hrZones.maxHR}.
+Zonas de Pulsaciones (% FC máx): Z1: ${hrZones.z1[0]}-${hrZones.z1[1]}, Z2: ${hrZones.z2[0]}-${hrZones.z2[1]}, Z3: ${hrZones.z3[0]}-${hrZones.z3[1]}, Z4: ${hrZones.z4[0]}-${hrZones.z4[1]}, Z5: ${hrZones.z5[0]}-${hrZones.z5[1]}, MaxHR: ${hrZones.maxHR}.
 Últimos entrenamientos completados en BD: ${logsContext}.
 Tus respuestas deben ser concisas, al punto, pero cálidas y alentadoras. No uses formato de asistente IA, sé un Coach humano y amable.`;
 
@@ -107,8 +119,9 @@ Tus respuestas deben ser concisas, al punto, pero cálidas y alentadoras. No use
                             uiMessages.push({ role: 'user', text: row.contexto_fatiga });
                         }
                         if (row.mensaje_coach) {
-                            geminiHistory.push({ role: 'model', parts: [{ text: row.mensaje_coach }] });
-                            uiMessages.push({ role: 'model', text: row.mensaje_coach });
+                            const cleanMessage = row.mensaje_coach.replace(/Aurelio/g, 'La Voz de Valencia');
+                            geminiHistory.push({ role: 'model', parts: [{ text: cleanMessage }] });
+                            uiMessages.push({ role: 'model', text: cleanMessage });
                         }
                     });
                 }

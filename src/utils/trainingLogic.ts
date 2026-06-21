@@ -1,131 +1,156 @@
+// =============================================================================
+//  Motor del plan — ahora alimentado por el plan real de Valencia 2026.
+//  Mantiene las firmas que ya usan las páginas (getPhaseForDate, getDailyFocus,
+//  getTrainingDetails, *Progress) y añade helpers más ricos basados en el plan.
+// =============================================================================
+import {
+    WEEKS, PHASES, PLAN_START, RACE_DATE, TOTAL_WEEKS,
+    sessionIndexForDay, type Week, type Session, type ZoneKey,
+} from '../data/marathonPlan';
+
+const DAY_MS = 86400000;
+const WEEK_MS = 7 * DAY_MS;
+
+/** Inicio del día (00:00) en ms. */
+function dayStart(d: Date) {
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+}
+
+/** Número de semana del plan (1–24) para una fecha, o null si está fuera del plan. */
+export function getWeekIndex(date: Date): number | null {
+    const diff = dayStart(date) - PLAN_START.getTime();
+    if (diff < 0) return null;
+    const idx = Math.floor(diff / WEEK_MS) + 1;
+    return idx > TOTAL_WEEKS ? null : idx;
+}
+
+/** Datos de la semana del plan para una fecha (o null si fuera del plan). */
+export function getWeekData(date: Date): Week | null {
+    const idx = getWeekIndex(date);
+    return idx ? WEEKS[idx - 1] : null;
+}
+
+/** Sesión concreta para una fecha (o null si descanso / fuera del plan). */
+export function getSessionForDate(date: Date): { week: Week; session: Session } | null {
+    const week = getWeekData(date);
+    if (!week) return null;
+    const si = sessionIndexForDay(date.getDay());
+    if (si === null) return null;
+    return { week, session: week.sessions[si] };
+}
+
+// -----------------------------------------------------------------------------
+//  Compatibilidad: getPhaseForDate({year, month, day}) → { name, color, border }
+// -----------------------------------------------------------------------------
+const PRE_SEASON = { name: 'Pre/Post Temporada', color: 'text-zinc-600', border: 'border-white/5' };
+
 export function getPhaseForDate(year: number, month: number, day: number) {
-    const d = new Date(year, month, day).getTime();
+    const week = getWeekData(new Date(year, month, day));
+    if (!week) return PRE_SEASON;
+    const p = PHASES[week.phase];
+    return { name: `${p.label} · ${p.range}`, color: p.color, border: p.border, phaseKey: p.key };
+}
 
-    const phases = [
-        { name: 'Fase 0: Acondicionamiento', start: new Date(2026, 3, 20), end: new Date(2026, 5, 21), color: 'text-blue-400', border: 'border-blue-400/30' },
-        { name: 'Fase 1: Base Acumulativa', start: new Date(2026, 5, 22), end: new Date(2026, 7, 2), color: 'text-emerald-500', border: 'border-emerald-500/30' },
-        { name: 'Fase 2: Fuerza-Resistencia', start: new Date(2026, 7, 3), end: new Date(2026, 8, 13), color: 'text-orange-400', border: 'border-orange-400/30' },
-        { name: 'Fase 3: Especificidad/Pico', start: new Date(2026, 8, 14), end: new Date(2026, 10, 8), color: 'text-red-500', border: 'border-red-500/30' },
-        { name: 'Fase 4: Tapering y Carga', start: new Date(2026, 10, 9), end: new Date(2026, 11, 6), color: 'text-primary', border: 'border-primary/50' }
-    ];
+// -----------------------------------------------------------------------------
+//  Iconografía por tipo de sesión (Material Symbols)
+// -----------------------------------------------------------------------------
+function iconForSession(session: Session | null): string {
+    if (!session) return 'self_improvement';
+    const t = session.title.toLowerCase();
+    if (t.includes('fuerza')) return 'fitness_center';
+    if (t.includes('cross')) return 'directions_bike';
+    if (t.includes('descanso')) return 'self_improvement';
+    if (t.includes('maratón')) return 'emoji_events';
+    if (t.includes('media')) return 'flag';
+    if (t.includes('tirada') || t.includes('larga')) return 'terrain';
+    if (t.includes('tempo') || t.includes('ritmo') || t.includes('serie') || t.includes('activación')) return 'speed';
+    return 'directions_run';
+}
 
-    for (const p of phases) {
-        if (d >= p.start.getTime() && d <= p.end.getTime() + 86400000) {
-            return p;
+function colorForSession(session: Session | null): string {
+    if (!session) return 'text-zinc-600';
+    const t = session.title.toLowerCase();
+    if (t.includes('fuerza')) return 'text-primary';
+    if (t.includes('maratón') || t.includes('media')) return 'text-orange-400';
+    if (t.includes('tirada') || t.includes('larga')) return 'text-emerald-500';
+    if (t.includes('tempo') || t.includes('ritmo') || t.includes('serie') || t.includes('activación')) return 'text-tertiary';
+    return 'text-tertiary';
+}
+
+// -----------------------------------------------------------------------------
+//  Compatibilidad: getDailyFocus(dayOfWeek, phaseName) → { label, icon, color }
+//  Ahora resuelve la sesión REAL del día a partir de la fecha cuando se pasa.
+// -----------------------------------------------------------------------------
+export function getDailyFocus(dayOfWeek: number, phaseName: string, date?: Date) {
+    if (phaseName === PRE_SEASON.name) {
+        return { label: 'OFF / Inactivo', icon: 'power_settings_new', color: 'text-zinc-600' };
+    }
+    // Si tenemos fecha, devolvemos la sesión exacta del plan.
+    if (date) {
+        const found = getSessionForDate(date);
+        if (!found) return { label: 'Descanso', icon: 'self_improvement', color: 'text-zinc-600' };
+        return { label: found.session.title, icon: iconForSession(found.session), color: colorForSession(found.session) };
+    }
+    // Sin fecha (compat): día de descanso si es Vie/Sáb.
+    const si = sessionIndexForDay(dayOfWeek);
+    if (si === null) return { label: 'Descanso', icon: 'self_improvement', color: 'text-zinc-600' };
+    return { label: ['Carrera', 'Carrera', 'Fuerza', 'Carrera', 'Tirada Larga'][si], icon: 'directions_run', color: 'text-tertiary' };
+}
+
+// -----------------------------------------------------------------------------
+//  Compatibilidad: getTrainingDetails → { detailMock, metricMock, hrZonesTarget }
+//  Ahora devuelve el detalle y volumen REALES de la sesión del plan.
+// -----------------------------------------------------------------------------
+export function getTrainingDetails(_focusLabel: string, phaseName: string, date?: Date) {
+    if (phaseName === PRE_SEASON.name) {
+        return {
+            detailMock: 'Plan de entrenamiento inactivo. El macrociclo no ha empezado o ya estás recuperándote del maratón.',
+            metricMock: 'INACTIVO',
+            hrZonesTarget: [] as ZoneKey[],
+        };
+    }
+
+    if (date) {
+        const found = getSessionForDate(date);
+        if (!found) {
+            return { detailMock: 'Descanso o recuperación activa. Escucha a tu cuerpo.', metricMock: 'REST', hrZonesTarget: [] as ZoneKey[] };
         }
-    }
-    return { name: 'Pre/Post Temporada', color: 'text-zinc-600', border: 'border-white/5' };
-}
-
-export function getDailyFocus(dayOfWeek: number, phaseName: string) {
-    if (phaseName === 'Pre/Post Temporada') {
-        return { label: 'OFF / Inactivo', icon: 'power_settings_new' };
-    }
-
-    const focusMap: Record<number, { label: string; icon: string; color: string }> = {
-        1: { label: 'Fuerza', icon: 'fitness_center', color: 'text-primary' },
-        2: { label: 'Carrera', icon: 'directions_run', color: 'text-tertiary' },
-        3: { label: 'Fuerza', icon: 'fitness_center', color: 'text-zinc-500' },
-        4: { label: 'Descanso', icon: 'self_improvement', color: 'text-zinc-600' },
-        5: { label: 'Velocidad', icon: 'directions_run', color: 'text-tertiary' },
-        6: { label: 'Híbrido', icon: 'bolt', color: 'text-orange-400' },
-        0: { label: 'Tirada Larga', icon: 'terrain', color: 'text-emerald-500' }
-    };
-    return focusMap[dayOfWeek] || { label: 'Esfuerzo moderado y mantenimiento general.', icon: 'radio_button_unchecked', color: 'text-zinc-400' };
-}
-
-export function getTrainingDetails(focusLabel: string, phaseName: string) {
-    let detailMock = "";
-    let metricMock = "";
-    let hrZonesTarget: ("z1" | "z2" | "z3" | "z4" | "z5")[] = [];
-
-    if (phaseName === 'Pre/Post Temporada') {
-        detailMock = "Plan de entrenamiento inactivo. El macrociclo no ha empezado o ya estás recuperándote del maratón.";
-        metricMock = "INACTIVO";
-    } else {
-        const phaseLevel = phaseName.charAt(5); // "Fase 0", "Fase 1"...
-
-        switch (focusLabel) {
-            case 'Fuerza':
-                detailMock = phaseLevel === '2' ? "Fuerza Pura (1-5 reps). Retención agresiva de masa muscular y ganancia neural." : "Squat y Peso Muerto. RPE 8. Retención de Fuerza Máxima. Evitar fallo muscular.";
-                metricMock = "45 - 60 MINS";
-                break;
-            case 'Carrera':
-                detailMock = "Base Aeróbica pura. Heart Rate anclado debajo del umbral aeróbico. Eficiencia mecánica.";
-                if (phaseLevel === '0') metricMock = "5 - 8 KM";
-                else if (phaseLevel === '1') metricMock = "8 - 12 KM";
-                else if (phaseLevel === '4') metricMock = "6 - 10 KM";
-                else metricMock = "10 - 15 KM";
-                hrZonesTarget = ['z1', 'z2'];
-                break;
-            case 'Velocidad':
-                detailMock = (phaseLevel === '0' || phaseLevel === '1') ? "Juegos de velocidad suaves (Fartlek). Despertares neuronales limpios." : "Series o Tempo Run calibrando Ritmo Objetivo Maratón + Trabajo de lactato.";
-                metricMock = (phaseLevel === '0' || phaseLevel === '4') ? "6 - 8 KM" : "10 - 14 KM";
-                hrZonesTarget = (phaseLevel === '0' || phaseLevel === '1') ? ['z3', 'z4'] : ['z4', 'z5'];
-                break;
-            case 'Tirada Larga':
-                detailMock = "Simulación de carrera en el domingo. Endurecimiento de la mente e impacto repetitivo.";
-                if (phaseLevel === '0') metricMock = "8 - 12 KM";
-                else if (phaseLevel === '1') metricMock = "14 - 18 KM";
-                else if (phaseLevel === '2') metricMock = "18 - 24 KM";
-                else if (phaseLevel === '3') metricMock = "25 - 32 KM";
-                else metricMock = "15 - 20 KM"; // Tapering
-                hrZonesTarget = phaseLevel === '3' ? ['z2', 'z3'] : ['z2'];
-                break;
-            case 'Híbrido':
-                detailMock = "Cadena posterior en el gimnasio seguido de rodaje en Fartlek. Adaptación en fatiga.";
-                metricMock = (phaseLevel === '0' || phaseLevel === '4') ? "60 MINS TOTAL" : "+90 MINS TOTAL";
-                hrZonesTarget = ['z3'];
-                break;
-            case 'Descanso':
-                detailMock = "Descanso total o recuperación activa (Flujo de movilidad de 20 min). Escuchar dolores articulares.";
-                metricMock = "REST";
-                break;
-            default:
-                detailMock = "Esfuerzo moderado y mantenimiento general.";
-                metricMock = "VARÍABLE";
-        }
+        const { week, session } = found;
+        const isLong = session === week.sessions[4];
+        return {
+            detailMock: session.detail,
+            metricMock: isLong ? `${week.longRun} KM` : session.title.toUpperCase(),
+            hrZonesTarget: session.zone ? [session.zone] : ([] as ZoneKey[]),
+        };
     }
 
-    return { detailMock, metricMock, hrZonesTarget };
+    return { detailMock: 'Esfuerzo según el plan de la semana.', metricMock: 'VARIABLE', hrZonesTarget: [] as ZoneKey[] };
 }
 
+// -----------------------------------------------------------------------------
+//  Progreso (macro / fase / semanal) — ahora ancladas al plan real
+// -----------------------------------------------------------------------------
 export function getMacrocycleProgress(dTime: number) {
-    const macroStart = new Date(2026, 3, 20).getTime(); // April 20
-    const macroEnd = new Date(2026, 11, 6).getTime(); // Dec 6
-
-    if (dTime < macroStart) return 0;
-    if (dTime > macroEnd) return 100;
-
-    const totalMacro = macroEnd - macroStart;
-    const passedMacro = dTime - macroStart;
-    return Math.min(100, Math.max(0, (passedMacro / totalMacro) * 100));
+    const start = PLAN_START.getTime();
+    const end = RACE_DATE.getTime();
+    if (dTime < start) return 0;
+    if (dTime > end) return 100;
+    return Math.min(100, Math.max(0, ((dTime - start) / (end - start)) * 100));
 }
 
-export function getPhaseProgress(dTime: number, phaseName: string) {
-    const phases = [
-        { name: 'Fase 0: Acondicionamiento', start: new Date(2026, 3, 20), end: new Date(2026, 5, 21) },
-        { name: 'Fase 1: Base Acumulativa', start: new Date(2026, 5, 22), end: new Date(2026, 7, 2) },
-        { name: 'Fase 2: Fuerza-Resistencia', start: new Date(2026, 7, 3), end: new Date(2026, 8, 13) },
-        { name: 'Fase 3: Especificidad/Pico', start: new Date(2026, 8, 14), end: new Date(2026, 10, 8) },
-        { name: 'Fase 4: Tapering y Carga', start: new Date(2026, 10, 9), end: new Date(2026, 11, 6) }
-    ];
-
-    const phaseKey = phaseName.split(':')[0]; // Extracts 'Fase 0' to match easily or we can match includes
-    const phase = phases.find(p => p.name.includes(phaseKey));
-    if (!phase) return 0;
-
-    if (dTime < phase.start.getTime()) return 0;
-    if (dTime > phase.end.getTime() + 86400000) return 100;
-
-    const totalPhase = phase.end.getTime() - phase.start.getTime();
-    const passedPhase = dTime - phase.start.getTime();
-    return Math.min(100, Math.max(0, (passedPhase / totalPhase) * 100));
+export function getPhaseProgress(dTime: number, _phaseName: string) {
+    const week = getWeekData(new Date(dTime));
+    if (!week) return 0;
+    const phaseWeeks = WEEKS.filter(w => w.phase === week.phase);
+    const first = phaseWeeks[0].n;
+    const last = phaseWeeks[phaseWeeks.length - 1].n;
+    const phaseStart = PLAN_START.getTime() + (first - 1) * WEEK_MS;
+    const phaseEnd = PLAN_START.getTime() + last * WEEK_MS;
+    return Math.min(100, Math.max(0, ((dTime - phaseStart) / (phaseEnd - phaseStart)) * 100));
 }
 
 export function getWeeklyProgress(dTime: number) {
-    const d = new Date(dTime);
-    const day = d.getDay();
-    const dayIndex = day === 0 ? 6 : day - 1; // Monday = 0, Sunday = 6
+    const day = new Date(dTime).getDay();
+    const dayIndex = day === 0 ? 6 : day - 1; // Lun=0 .. Dom=6
     return Math.round((dayIndex / 6) * 100);
 }

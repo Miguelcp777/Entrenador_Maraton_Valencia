@@ -4,10 +4,10 @@ export default function BottomNavBar() {
     const location = useLocation();
 
     const navItems = [
-        { path: '/', label: 'Dashboard', icon: 'dashboard' },
+        { path: '/', label: 'Inicio', icon: 'dashboard' },
         { path: '/calendar', label: 'Plan', icon: 'calendar_month' },
-        { path: '/week', label: 'My Week', icon: 'calendar_view_week' },
-        { path: '/today', label: 'Today', icon: 'bolt' },
+        { path: '/week', label: 'Semana', icon: 'calendar_view_week' },
+        { path: '/today', label: 'Hoy', icon: 'bolt' },
         { path: '/coach', label: 'Coach', icon: 'smart_toy' },
     ];
 

@@ -29,9 +29,9 @@ export default function StravaCallback() {
 
     const exchangeToken = async (code: string) => {
         try {
-            // Hardcoded user secrets for local individual app
-            const clientId = '223033';
-            const clientSecret = '6c9623a2953e6faa2d540e0ac3421f43f74bec8d';
+            // Credenciales de Strava desde variables de entorno (.env.local, no versionado).
+            const clientId = import.meta.env.VITE_STRAVA_CLIENT_ID;
+            const clientSecret = import.meta.env.VITE_STRAVA_CLIENT_SECRET;
 
             const response = await fetch('https://www.strava.com/api/v3/oauth/token', {
                 method: 'POST',

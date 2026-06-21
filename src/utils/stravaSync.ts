@@ -2,8 +2,8 @@ import { supabase } from '../supabaseClient';
 
 export const refreshStravaTokens = async (refreshToken: string) => {
     try {
-        const clientId = '223033';
-        const clientSecret = '6c9623a2953e6faa2d540e0ac3421f43f74bec8d';
+        const clientId = import.meta.env.VITE_STRAVA_CLIENT_ID;
+        const clientSecret = import.meta.env.VITE_STRAVA_CLIENT_SECRET;
 
         const response = await fetch('https://www.strava.com/api/v3/oauth/token', {
             method: 'POST',

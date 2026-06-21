@@ -48,11 +48,21 @@ export default function CalendarView() {
             if (data && data.length > 0) {
                 setDayLogsData(data);
 
-                // Bind the form to the first log just for legacy compatibility
+                // Bind the form to the first log
                 const firstLog = data[0];
                 setExistingLogId(firstLog.id);
-                setDistance(firstLog.distancia_real_km?.toString() || '');
-                setDuration(firstLog.duracion_real_mins?.toString() || '');
+                
+                // If it has Strava data but distance_real_km is 0/null, use the Strava distance as default
+                const dbDistance = firstLog.distancia_real_km;
+                const stravaDistance = firstLog.metricas_extra?.distancia_km || (firstLog.metricas_extra?.distance ? firstLog.metricas_extra.distance / 1000 : 0);
+                
+                setDistance(dbDistance > 0 ? dbDistance.toString() : (stravaDistance > 0 ? stravaDistance.toFixed(2) : ''));
+                setDuration(
+                    firstLog.duracion_real_mins
+                        ? firstLog.duracion_real_mins.toString()
+                        : (firstLog.metricas_extra?.moving_time ? Math.round(firstLog.metricas_extra.moving_time / 60).toString() : '')
+                );
+                
                 setRpe(firstLog.rpe_real || 7);
                 setFeelings(firstLog.sentimientos || '');
             } else {
@@ -299,12 +309,12 @@ REGLA CLAVE: Eres súper cálido, motivador y apoyas incondicionalmente al atlet
                 {days.map((d) => {
                     const dateObj = new Date(year, month, d);
                     const isToday = today.getDate() === d && today.getMonth() === month && today.getFullYear() === year;
-                    const macroStart = new Date(2026, 3, 20); // April 20, 2026
+                    const macroStart = new Date(2026, 5, 22); // 22 jun 2026 (inicio del plan)
                     const isPast = dateObj < new Date(today.getFullYear(), today.getMonth(), today.getDate()) && dateObj >= macroStart;
                     const currentDayOfWeek = dateObj.getDay();
                     const phase = getPhaseForDate(year, month, d);
-                    const focus = getDailyFocus(currentDayOfWeek, phase.name);
-                    const isRestDay = focus.label === 'OFF / Inactivo';
+                    const focus = getDailyFocus(currentDayOfWeek, phase.name, dateObj);
+                    const isRestDay = focus.label === 'OFF / Inactivo' || focus.label === 'Descanso';
 
                     // Check if logs exist
                     const dayLogs = monthLogs.filter(log => new Date(log.fecha_completada).getDate() === d);
@@ -415,8 +425,8 @@ REGLA CLAVE: Eres súper cálido, motivador y apoyas incondicionalmente al atlet
                 const m = selectedDate.getMonth();
                 const y = selectedDate.getFullYear();
                 const phase = getPhaseForDate(y, m, d);
-                const focus = getDailyFocus(selectedDate.getDay(), phase.name);
-                const { detailMock, metricMock, hrZonesTarget } = getTrainingDetails(focus.label, phase.name);
+                const focus = getDailyFocus(selectedDate.getDay(), phase.name, selectedDate);
+                const { detailMock, metricMock, hrZonesTarget } = getTrainingDetails(focus.label, phase.name, selectedDate);
 
                 return (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">

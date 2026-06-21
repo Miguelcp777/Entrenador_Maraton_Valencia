@@ -16,7 +16,7 @@ export default function TopAppBar() {
                     />
                 </div>
                 <Link to="/" className="font-['Inter'] font-black uppercase tracking-tighter text-lg italic text-orange-600 dark:text-orange-500">
-                    MARATON VALENCIA TRAINING
+                    MARATÓN VALENCIA 2026
                 </Link>
             </div>
             <Link to="/settings" className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-zinc-800 transition-colors active:scale-95 duration-150">

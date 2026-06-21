@@ -12,8 +12,8 @@ export default function DashboardAIEvaluation() {
         let isMounted = true;
         const fetchAndEvaluate = async () => {
             const todayStr = new Date().toDateString();
-            const cachedDate = localStorage.getItem('valencia2026_ai_eval_date');
-            const cachedText = localStorage.getItem('valencia2026_ai_eval_text');
+            const cachedDate = localStorage.getItem('val_ai_eval_date_v2');
+            const cachedText = localStorage.getItem('val_ai_eval_text_v2');
 
             if (cachedDate === todayStr && cachedText) {
                 if (isMounted) setEvaluation(cachedText);
@@ -67,8 +67,8 @@ Proporciona una valoración extremadamente concisa y analítica de su ESTADO ACT
 
                 if (isMounted) {
                     setEvaluation(text.trim());
-                    localStorage.setItem('valencia2026_ai_eval_date', todayStr);
-                    localStorage.setItem('valencia2026_ai_eval_text', text.trim());
+                    localStorage.setItem('val_ai_eval_date_v2', todayStr);
+                    localStorage.setItem('val_ai_eval_text_v2', text.trim());
                 }
             } catch (err: any) {
                 console.error("AI Evaluation error:", err);
@@ -83,8 +83,8 @@ Proporciona una valoración extremadamente concisa y analítica de su ESTADO ACT
     }, [geminiApiKey, name, hrZones]);
 
     const handleForceRefresh = () => {
-        localStorage.removeItem('valencia2026_ai_eval_date');
-        localStorage.removeItem('valencia2026_ai_eval_text');
+        localStorage.removeItem('val_ai_eval_date_v2');
+        localStorage.removeItem('val_ai_eval_text_v2');
         window.location.reload();
     };
 

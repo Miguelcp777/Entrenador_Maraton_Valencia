@@ -1,7 +1,9 @@
-import { getPhaseForDate, getDailyFocus, getTrainingDetails } from '../utils/trainingLogic';
+import { getPhaseForDate, getDailyFocus, getTrainingDetails, getWeekData } from '../utils/trainingLogic';
+import { PHASES } from '../data/marathonPlan';
 
 export default function MyWeek() {
     const todayDate = new Date();
+    const currentWeek = getWeekData(todayDate);
     const currentDay = todayDate.getDay();
     const diff = todayDate.getDate() - currentDay + (currentDay === 0 ? -6 : 1);
     const monday = new Date(todayDate.setDate(diff));
@@ -24,13 +26,15 @@ export default function MyWeek() {
                 />
                 <div className="absolute inset-0 z-20 p-5 flex flex-col justify-end">
                     <span className="font-['Space_Grotesk'] text-primary text-[10px] uppercase font-bold tracking-[0.2em] mb-1">
-                        Valencia 2026 Strategy
+                        {currentWeek ? `Semana ${currentWeek.n}/24 · ${PHASES[currentWeek.phase].label}` : 'Valencia 2026'}
                     </span>
                     <h2 className="font-['Inter'] font-black text-xl leading-tight uppercase italic text-on-surface max-w-[85%]">
-                        Strategy of the Week: <span className="text-primary-dim">Threshold Adaptation</span>
+                        {currentWeek ? currentWeek.focus : 'El plan arranca el 22 de junio de 2026'}
                     </h2>
                     <p className="text-on-surface-variant text-xs mt-2 font-['Space_Grotesk']">
-                        "Valencia's flat course rewards metabolic efficiency." — Coach Mendez
+                        {currentWeek
+                            ? `Tirada larga ${currentWeek.longRun} km · vol. ${currentWeek.volume ?? '—'} km · ${PHASES[currentWeek.phase].desc}`
+                            : '"Paso a paso llegaremos juntos a la meta." — La Voz de Valencia'}
                     </p>
                 </div>
             </section>
@@ -40,9 +44,9 @@ export default function MyWeek() {
                 {weekDatesArray.map((dateObj, idx) => {
                     const currentDayOfWeek = dateObj.getDay();
                     const phase = getPhaseForDate(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
-                    const focus = getDailyFocus(currentDayOfWeek, phase.name);
-                    const { detailMock, metricMock } = getTrainingDetails(focus.label, phase.name);
-                    const dayNames = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+                    const focus = getDailyFocus(currentDayOfWeek, phase.name, dateObj);
+                    const { detailMock, metricMock } = getTrainingDetails(focus.label, phase.name, dateObj);
+                    const dayNames = ["DOM", "LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB"];
                     const isInactive = phase.name === 'Pre/Post Temporada';
 
                     return (

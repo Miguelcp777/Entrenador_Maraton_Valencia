@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '../supabaseClient';
+import { zonesForMaxHR, DEFAULT_MAX_HR, PLAN_START } from '../data/marathonPlan';
 
 interface HRZones {
     z1: [number, number];
@@ -25,6 +26,8 @@ interface AthleteContextProps {
     setBirthDate: (date: string) => void;
     restingHR: number;
     setRestingHR: (hr: number) => void;
+    maxHR: number;
+    setMaxHR: (hr: number) => void;
     geminiApiKey: string;
     setGeminiApiKey: (key: string) => void;
     complianceScore: number;
@@ -56,6 +59,7 @@ export function AthleteProvider({ children }: { children: ReactNode }) {
     const [height, setHeight] = useState<number>(() => getInitialState('athlete_height', 180));
     const [birthDate, setBirthDate] = useState<string>(() => getInitialState('athlete_birthDate', "1990-01-01"));
     const [restingHR, setRestingHR] = useState<number>(() => getInitialState('athlete_restingHR', 50));
+    const [maxHR, setMaxHR] = useState<number>(() => getInitialState('athlete_maxHR', DEFAULT_MAX_HR));
     const [geminiApiKey, setGeminiApiKey] = useState<string>(() => getInitialState('athlete_geminiApiKey', ""));
     const [stravaTokens, setStravaTokens] = useState<any>(() => getInitialState('strava_tokens', null));
     const [complianceScore, setComplianceScore] = useState<number>(0);
@@ -68,13 +72,29 @@ export function AthleteProvider({ children }: { children: ReactNode }) {
             if (data && !error) {
                 // Determine if we should update local state from DB
                 // We prioritize DB value if it exists, otherwise keep local
-                if (data.peso_actual) setWeight(data.peso_actual);
                 if (data.peso_objetivo) setTargetWeight(data.peso_objetivo);
                 if (data.nombre) setName(data.nombre);
                 if (data.avatar_url) setAvatarUrl(data.avatar_url);
                 if (data.altura) setHeight(data.altura);
                 if (data.fecha_nacimiento) setBirthDate(data.fecha_nacimiento);
                 if (data.fc_reposo) setRestingHR(data.fc_reposo);
+                if (data.fc_maxima) setMaxHR(data.fc_maxima);
+
+                // Fetch latest weigh-in from records
+                const { data: latestWeight, error: weightError } = await supabase
+                    .from('registros_peso')
+                    .select('peso_kg')
+                    .eq('atleta_id', data.id)
+                    .order('fecha', { ascending: false })
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .maybeSingle();
+
+                if (!weightError && latestWeight) {
+                    setWeight(parseFloat(latestWeight.peso_kg));
+                } else if (data.peso_actual) {
+                    setWeight(parseFloat(data.peso_actual));
+                }
 
                 // ✅ Strava persistence
                 if (data.strava_tokens && Object.keys(data.strava_tokens).length > 0) {
@@ -101,11 +121,12 @@ export function AthleteProvider({ children }: { children: ReactNode }) {
                 .from('logs_entrenamiento')
                 .select('*', { count: 'exact', head: true });
 
-            const macroStart = new Date(2026, 3, 20).getTime();
+            const macroStart = PLAN_START.getTime(); // 22 jun 2026 (inicio del plan)
             const now = Date.now();
             if (now > macroStart) {
                 const daysPassed = Math.floor((now - macroStart) / (1000 * 60 * 60 * 24));
-                const expectedSessions = Math.max(1, Math.floor(daysPassed * (6 / 7)));
+                // El plan tiene 5 sesiones/semana (2 días de descanso).
+                const expectedSessions = Math.max(1, Math.floor(daysPassed * (5 / 7)));
                 const actualLogs = logsCount || 0;
                 const score = Math.round((actualLogs / expectedSessions) * 100);
                 setComplianceScore(Math.min(100, Math.max(0, score)));
@@ -127,7 +148,7 @@ export function AthleteProvider({ children }: { children: ReactNode }) {
 
             if (now > macroStart) {
                 const todayIndex = currentDay === 0 ? 7 : currentDay;
-                const expectedWeekly = Math.max(1, Math.floor(todayIndex * (6 / 7)));
+                const expectedWeekly = Math.max(1, Math.floor(todayIndex * (5 / 7)));
                 const weeklyScore = Math.round(((weeklyLogsCount || 0) / expectedWeekly) * 100);
                 setWeeklyComplianceScore(Math.min(100, Math.max(0, weeklyScore)));
             } else {
@@ -145,6 +166,7 @@ export function AthleteProvider({ children }: { children: ReactNode }) {
     useEffect(() => { localStorage.setItem('athlete_height', JSON.stringify(height)); }, [height]);
     useEffect(() => { localStorage.setItem('athlete_birthDate', JSON.stringify(birthDate)); }, [birthDate]);
     useEffect(() => { localStorage.setItem('athlete_restingHR', JSON.stringify(restingHR)); }, [restingHR]);
+    useEffect(() => { localStorage.setItem('athlete_maxHR', JSON.stringify(maxHR)); }, [maxHR]);
 
     useEffect(() => {
         localStorage.setItem('athlete_geminiApiKey', JSON.stringify(geminiApiKey));
@@ -169,23 +191,10 @@ export function AthleteProvider({ children }: { children: ReactNode }) {
         }
     }, [stravaTokens]);
 
-    const dob = new Date(birthDate);
-    const todayDate = new Date();
-    let age = todayDate.getFullYear() - dob.getFullYear();
-    const m = todayDate.getMonth() - dob.getMonth();
-    if (m < 0 || (m === 0 && todayDate.getDate() < dob.getDate())) age--;
-
-    const maxHR = 220 - (age || 30);
-    const hrr = maxHR - restingHR;
-
-    const hrZones: HRZones = {
-        z1: [Math.round(hrr * 0.5 + restingHR), Math.round(hrr * 0.6 + restingHR)],
-        z2: [Math.round(hrr * 0.6 + restingHR), Math.round(hrr * 0.7 + restingHR)],
-        z3: [Math.round(hrr * 0.7 + restingHR), Math.round(hrr * 0.8 + restingHR)],
-        z4: [Math.round(hrr * 0.8 + restingHR), Math.round(hrr * 0.9 + restingHR)],
-        z5: [Math.round(hrr * 0.9 + restingHR), maxHR],
-        maxHR
-    };
+    // Zonas por % de FC máx (modelo del plan Valencia 2026). FC máx configurable
+    // en Ajustes (172 por defecto); se recalibra tras la prueba de esfuerzo.
+    const z = zonesForMaxHR(maxHR);
+    const hrZones: HRZones = { ...z, maxHR };
 
     return (
         <AthleteContext.Provider value={{
@@ -196,6 +205,7 @@ export function AthleteProvider({ children }: { children: ReactNode }) {
             height, setHeight,
             birthDate, setBirthDate,
             restingHR, setRestingHR,
+            maxHR, setMaxHR,
             geminiApiKey, setGeminiApiKey,
             complianceScore,
             weeklyComplianceScore,

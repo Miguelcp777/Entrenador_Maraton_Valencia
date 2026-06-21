@@ -9,6 +9,7 @@ export default function Settings() {
         weight, setWeight, targetWeight, setTargetWeight,
         name, setName, avatarUrl, setAvatarUrl,
         height, setHeight, birthDate, setBirthDate, restingHR, setRestingHR,
+        maxHR, setMaxHR,
         geminiApiKey, setGeminiApiKey, stravaTokens, setStravaTokens
     } = useAthlete();
     const [isUpdating, setIsUpdating] = useState(false);
@@ -40,6 +41,7 @@ export default function Settings() {
                     altura: height,
                     fecha_nacimiento: birthDate,
                     fc_reposo: restingHR,
+                    fc_maxima: maxHR,
                     // ✅ Persist Gemini API key and Strava tokens permanently
                     ...(geminiApiKey ? { gemini_api_key: geminiApiKey } : {}),
                     ...(stravaTokens?.accessToken ? { strava_tokens: stravaTokens } : {}),
@@ -197,6 +199,20 @@ export default function Settings() {
                             className="w-full bg-surface-container-lowest border-none font-['Inter'] font-black text-3xl py-4 rounded-lg placeholder:text-surface-container-highest focus:ring-1 focus:ring-red-500/50 transition-all text-center text-red-500"
                         />
                     </div>
+                    <div className="group col-span-2">
+                        <label className="block font-['Space_Grotesk'] text-[10px] uppercase font-bold tracking-widest text-outline group-focus-within:text-red-500 mb-2 transition-colors text-center">
+                            FC Máxima (BPM)
+                        </label>
+                        <input
+                            type="number"
+                            value={maxHR}
+                            onChange={(e) => setMaxHR(parseInt(e.target.value) || 0)}
+                            className="w-full bg-surface-container-lowest border-none font-['Inter'] font-black text-3xl py-4 rounded-lg placeholder:text-surface-container-highest focus:ring-1 focus:ring-red-500/50 transition-all text-center text-red-500"
+                        />
+                        <p className="font-['Space_Grotesk'] text-[11px] text-zinc-500 mt-2 leading-relaxed text-center">
+                            Estimada en 172 (Tanaka, 51 años). Pídela medida en tu prueba de esfuerzo y recalibra aquí: todas las zonas se recalculan al instante.
+                        </p>
+                    </div>
                 </div>
 
                 {(() => {
@@ -206,20 +222,19 @@ export default function Settings() {
                     const m = today.getMonth() - dob.getMonth();
                     if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
 
-                    const maxHR = 220 - (age || 30);
-                    const hrr = maxHR - restingHR;
-
-                    const z1 = [Math.round(hrr * 0.5 + restingHR), Math.round(hrr * 0.6 + restingHR)];
-                    const z2 = [Math.round(hrr * 0.6 + restingHR), Math.round(hrr * 0.7 + restingHR)];
-                    const z3 = [Math.round(hrr * 0.7 + restingHR), Math.round(hrr * 0.8 + restingHR)];
-                    const z4 = [Math.round(hrr * 0.8 + restingHR), Math.round(hrr * 0.9 + restingHR)];
-                    const z5 = [Math.round(hrr * 0.9 + restingHR), maxHR];
+                    // Zonas por % de FC máx (modelo del plan Valencia 2026).
+                    const r = (p: number) => Math.round(maxHR * p);
+                    const z1 = [r(0.50), r(0.60)];
+                    const z2 = [r(0.60), r(0.70)];
+                    const z3 = [r(0.70), r(0.80)];
+                    const z4 = [r(0.80), r(0.90)];
+                    const z5 = [r(0.90), maxHR];
 
                     return (
                         <div className="bg-surface-container-low p-6 rounded-xl border border-red-500/20 ambient-glow">
                             <div className="flex items-center gap-2 mb-6">
                                 <span className="material-symbols-outlined text-red-500 text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>favorite</span>
-                                <h2 className="font-['Inter'] font-bold text-lg uppercase tracking-tighter">Zonas de Ritmo Cardíaco (Karvonen)</h2>
+                                <h2 className="font-['Inter'] font-bold text-lg uppercase tracking-tighter">Zonas de Pulsaciones (% FC máx)</h2>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4 mb-6 text-center">

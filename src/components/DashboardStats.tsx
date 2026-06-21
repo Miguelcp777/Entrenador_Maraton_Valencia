@@ -23,15 +23,16 @@ export default function DashboardStats() {
     }, []);
 
     // Filter logs for week or month
-    const today = new Date();
-
-    // Calculate start of week (Monday)
-    const dayOfWeek = today.getDay(); // 0 is Sunday, 1 is Monday...
-    const diffToMonday = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-    const startOfWeek = new Date(today.setDate(diffToMonday));
+    const now = new Date();
+    
+    // Calculate start of week (Monday) without mutating now
+    const startOfWeek = new Date(now);
+    const dayOfWeek = startOfWeek.getDay(); // 0 is Sunday, 1 is Monday...
+    const diffToMonday = startOfWeek.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+    startOfWeek.setDate(diffToMonday);
     startOfWeek.setHours(0, 0, 0, 0);
 
-    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
     const activeLogs = logs.filter(log => {
         if (view === 'total') return true;
