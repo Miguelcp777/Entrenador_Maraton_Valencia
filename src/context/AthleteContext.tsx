@@ -78,7 +78,8 @@ export function AthleteProvider({ children }: { children: ReactNode }) {
                 if (data.altura) setHeight(data.altura);
                 if (data.fecha_nacimiento) setBirthDate(data.fecha_nacimiento);
                 if (data.fc_reposo) setRestingHR(data.fc_reposo);
-                if (data.fc_maxima) setMaxHR(data.fc_maxima);
+                // FC máx se guarda en localStorage (la tabla no tiene columna fc_maxima).
+                if (data.fc_maxima) setMaxHR(data.fc_maxima); // se usará si añades la columna
 
                 // Fetch latest weigh-in from records
                 const { data: latestWeight, error: weightError } = await supabase

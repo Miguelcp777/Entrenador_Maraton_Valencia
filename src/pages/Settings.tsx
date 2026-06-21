@@ -41,7 +41,6 @@ export default function Settings() {
                     altura: height,
                     fecha_nacimiento: birthDate,
                     fc_reposo: restingHR,
-                    fc_maxima: maxHR,
                     // ✅ Persist Gemini API key and Strava tokens permanently
                     ...(geminiApiKey ? { gemini_api_key: geminiApiKey } : {}),
                     ...(stravaTokens?.accessToken ? { strava_tokens: stravaTokens } : {}),
